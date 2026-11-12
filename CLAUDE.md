@@ -68,7 +68,10 @@ name. `hardware/main-board/` is created first.
    - KiCad stores a copy of every used symbol in the schematic and every
      footprint in the PCB, so this project still opens if the library changes.
    - Recommend putting the library under its own git repository.
-5. THT/panel parts (pots, jacks, buttons, encoder, relay, DC jack, headers) are
+5. **SMD wherever a part exists in SMD**, so that JLCPCB places it (this
+   includes relays and board-to-board connectors). THT is used only for panel
+   and mechanical parts (pots, 6.35 mm jacks, buttons, encoder, DC jack,
+   Daisy Seed headers) or when no SMD version is in stock. THT parts are
    hand-soldered, but still get an LCSC number so they are ordered together.
 6. Daisy Seed: 2× female headers 1×20, 2.54 mm, on the **bottom side** of the
    main board; footprint spacing from the official Electrosmith footprint.
