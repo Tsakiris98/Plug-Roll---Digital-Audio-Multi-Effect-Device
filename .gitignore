@@ -33,3 +33,6 @@ firmware/**/build/
 # Python
 __pycache__/
 *.pyc
+
+# Claude Code local settings (per machine)
+.claude/settings.local.json
