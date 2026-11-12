@@ -1,7 +1,8 @@
 # Input Section — Design Note (v0.5, 2026-11-12)
 
 Status: **architecture and parts approved; schematic in progress** (drawn so
-far: input jacks, INST/LINE relays, LINE receivers, INST buffer). Every number marked
+far: input jacks, INST/LINE relays, LINE receivers, INST buffer, gain stages
+and ADC pad; the input section is complete except for the Daisy Seed socket). Every number marked
 *(measure)* is provisional until it is measured on the real Daisy Seed Rev 5.
 
 Changes from v0.4 (decision of 2026-11-12): **no digital control of analog
@@ -210,6 +211,21 @@ Decisions:
   inputs above about 2.3 V peak clip in the buffer. Synths and keyboards on TS
   cables belong in LINE mode. If your guitars are hotter, this becomes +6 dB
   (one resistor).
+- **Two 100 pF capacitors per gain stage, added when the schematic was
+  drawn.** One across the 10 kΩ feedback resistor: it limits the bandwidth of
+  the ×11 stage to about 160 kHz (−0.07 dB at 20 kHz), which keeps the stage
+  stable and stops it amplifying radio frequencies. One from the wiper input
+  to ground, next to the 100 kΩ: the wiper arrives through a cable, and this
+  shorts any radio frequency the cable picks up (corner above 600 kHz with
+  the 2.5 kΩ of the pot).
+- **Known risk: pot rustle.** The NE5532 input draws a small DC current
+  (200 nA typ, 800 nA max, TI SLOS075K) through the wiper. With some pots this
+  is heard as a faint rustle while the knob is turned. It also gives a DC
+  offset at the hot node that changes with the knob (at most about 22 mV from
+  this current, plus the op-amp's own offset times 11). Checked on the
+  prototype *(measure)*. Fallback without a board change: fit a TL072 in the
+  U3 position (same SOIC-8 pinout, picoamp input current); the cost is more
+  hiss at high gain, still below the codec floor.
 - **The two gangs of an audio-taper pot do not track perfectly** (a few dB
   left/right error at low settings is normal for the part).
 
@@ -546,6 +562,7 @@ note.
 | Click when switching INST/LINE with the gain up | scope on the hot node and listening | whether a coupling capacitor after K2 or a Daisy-driven mute is needed |
 | K1 relay contact with a guitar (very small current) | listening for crackle or dropouts over time | relay type at the INST input |
 | Distortion at 20–50 Hz through the LINE input capacitors | THD measurement at +20 dBu | ceramic or bipolar electrolytic |
+| Rustle while turning the gain pot, DC at the hot node against pot position | listening at high monitor level, multimeter on the hot node | NE5532 or TL072 in the gain stage (U3) |
 | Level of your instruments | guitar/synth into a scope or interface | INST buffer gain (+12 or +6 dB) |
 
 ## Sources

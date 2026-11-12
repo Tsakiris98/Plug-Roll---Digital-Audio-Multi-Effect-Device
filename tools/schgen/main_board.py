@@ -34,6 +34,12 @@ RELAY_FIELDS = {"Footprint": "JLCPCB:RELAY-SMD_G6K-2F-Y", "LCSC": "C2982926",
 R1K = "JLCPCB:0603WAF1001T5E"      # 1 k 1 %, C21190
 R3K = "JLCPCB:0603WAF3001T5E"      # 3 k 1 %, C4211
 R1M = "JLCPCB:0603WAF1004T5E"      # 1 M 1 %, C22935
+R100 = "JLCPCB:0603WAF1000T5E"     # 100 R 1 %, C22775
+R10K = "JLCPCB:0603WAF1002T5E"     # 10 k 1 %, C25804
+R5K6 = "JLCPCB:0603WAF5601T5E"     # 5.6 k 1 %, C23189
+R100K = "JLCPCB:0603WAF1003T5E"    # 100 k 1 %, C25803
+C2N2 = "JLCPCB:0603CG222J500NT"    # 2.2 nF C0G 50 V, C2991172
+JACK35 = "JLCPCB:PJ-327A5JJ"       # 3.5 mm stereo, SMD: 1, 2 = sleeve, 3 = ring, 4 = tip, 5 = tip switch
 TL072 = "Amplifier_Operational:TL072"
 TL072_FIELDS = {"Footprint": "JLCPCB:SOIC-8_L5.0-W4.0-P1.27-LS6.0-BL", "LCSC": "C6961",
                 "MPN": "TL072CDT", "Manufacturer": "STMicroelectronics"}
@@ -345,6 +351,100 @@ def inst_buffer(s):
     net("+12V", "D6.2")
     net("-12V", "D6.1")
 
+def to_ground(s, part_lib, ref, value, x, y, name=None):
+    """Two-pin part from the point (x, y) on a horizontal wire down to analog ground."""
+    part = s.add(part_lib, ref, value, (x, y + 7.62), rot=90)
+    s.junction((x, y))
+    s.wire((x, y), part.top)
+    b = part.bottom
+    s.wire(b, (b[0], b[1] + 2.54))
+    s.power("GNDA", (b[0], b[1] + 2.54))
+    net("GNDA", ref)
+    return part
+
+
+def gain_stage(s, ch, yj, unit, jref, r, c, adc_pin):
+    """Gain pot connector, fixed gain x11, pad to the Daisy ADC. r, c = first R and C numbers."""
+    R = lambda i: f"R{r + i}"
+    C = lambda i: f"C{c + i}"
+    s.text(f"{'LEFT' if ch == 'L' else 'RIGHT'} channel: gain pot, x11 (+20.8 dB), pad to the Daisy", (38.1, yj - 20.32), 1.5)
+    # --- cable to the gain pot on the control board ---
+    j = s.add(JACK35, jref, "PJ-327A", (60.96, yj), ref_at=(58.42, yj - 16.51), val_at=(58.42, yj - 13.97))
+    p1, p2, p3, p4, p5 = (j.pin(k) for k in (1, 2, 3, 4, 5))
+    assert p3 == (66.04, round(yj - 1.27, 2)) and p4 == (66.04, round(yj + 3.81, 2)), (p3, p4)
+    s.no_connect(p5)
+    yg = round(yj + 11.43, 2)
+    s.wire(p1, (68.58, p1[1]), (68.58, yj - 10.16), (50.8, yj - 10.16), (50.8, yg))
+    s.wire(p2, (68.58, p2[1]), (68.58, yg), (50.8, yg), (50.8, yg + 2.54))
+    s.junction((50.8, yg))
+    s.power("GNDA", (50.8, yg + 2.54))
+    yt = round(yj + 27.94, 2)
+    s.glabel(f"CH_{ch}_IN", (40.64, yt), 180)
+    r17 = s.add(R100, R(0), "100R", (55.88, yt))
+    s.wire((40.64, yt), r17.left)
+    s.wire(r17.right, (73.66, yt), (73.66, p4[1]), p4)
+    s.text("Cable to the gain pot: tip = top of the pot, ring = wiper, sleeve = analog ground + shield.", (38.1, yj + 38.1))
+    # --- wiper to the op-amp ---
+    uy = round(yj + 1.27, 2)
+    u = s.add(NE5532, "U3", "NE5532", (139.7, uy), unit=unit, fields=NE5532_FIELDS,
+              ref_at=(147.32, uy - 7.62), val_at=(147.32, uy - 5.08))
+    pin_minus, pin_plus, pin_out = (2, 3, 1) if unit == 1 else (6, 5, 7)
+    pm, pp, po = u.pin(pin_minus), u.pin(pin_plus), u.pin(pin_out)
+    assert pp[1] == p3[1], (pp, p3)
+    s.wire(p3, pp)
+    to_ground(s, R100K, R(1), "100k", 91.44, p3[1])
+    rf_cap(s, C(0), 106.68, p3[1])
+    # --- feedback: 10k / 1k = x11, 100 pF across the 10k ---
+    xm, xo = 127.0, 157.48
+    y1, y2 = round(uy + 20.32, 2), round(uy + 30.48, 2)
+    rf = s.add(R10K, R(2), "10k", (142.24, y1))
+    cf = s.add(C100P, C(1), C100P_V, (142.24, y2))
+    s.wire(pm, (xm, pm[1]), (xm, y1), (xm, y2), cf.left)
+    s.wire((xm, y1), rf.left)
+    s.wire(po, (xo, po[1]), (xo, y1), (xo, y2), cf.right)
+    s.wire(rf.right, (xo, y1))
+    for pt in ((xm, y1), (xo, y1), (xo, po[1])):
+        s.junction(pt)
+    rg = s.add(R1K, R(3), "1k", (114.3, y1 + 7.62), rot=90)
+    s.wire((xm, y1), (114.3, y1), rg.top)
+    b = rg.bottom
+    s.wire(b, (b[0], b[1] + 2.54))
+    s.power("GNDA", (b[0], b[1] + 2.54))
+    # --- hot node: bypass tap, then the pad ---
+    xh = 172.72
+    s.wire((xo, po[1]), (xh, po[1]))
+    s.junction((xh, po[1]))
+    s.wire((xh, po[1]), (xh, po[1] - 12.7), (185.42, po[1] - 12.7))
+    s.glabel(f"HOT_{ch}", (185.42, po[1] - 12.7))
+    s.text("hot node: 0 dBFS = +18.9 dBu here. Bypass tap.", (172.72, po[1] - 17.78))
+    rs = s.add(R5K6, R(4), "5k6", (187.96, po[1]))
+    s.wire((xh, po[1]), rs.left)
+    xe = 236.22
+    s.wire(rs.right, (xe, po[1]))
+    to_ground(s, R1K, R(5), "1k", 205.74, po[1])
+    to_ground(s, C2N2, C(2), "2n2 C0G", 220.98, po[1])
+    s.glabel(f"ADC_IN_{ch}", (xe, po[1]))
+    s.text(f"to Daisy Seed pin {adc_pin}", (236.22, po[1] + 5.08))
+
+    net(f"CH_{ch}_IN", R(0))
+    net(f"{ch}_pot_top", R(0), f"{jref}.4")
+    net("GNDA", f"{jref}.1", f"{jref}.2", R(3))
+    net(f"{ch}_wiper", f"{jref}.3", R(1), C(0), f"U3.{pin_plus}")
+    net(f"{ch}_gain_fb", f"U3.{pin_minus}", R(2), C(1), R(3))
+    net(f"HOT_{ch}", f"U3.{pin_out}", R(2), C(1), R(4))
+    net(f"ADC_IN_{ch}", R(4), R(5), C(2))
+
+
+def input_gain(s):
+    s.text("INPUT GAIN AND ADC PAD", (38.1, 25.4), 2.0)
+    s.text("The gain pot (10k dual, audio taper) is on the control board. One shielded 3.5 mm stereo cable per channel connects it to J3 / J4.\n"
+           "Pad 5k6 / 1k brings the hot node down to codec level and limits voltage and current at the Daisy pin. No bias: the Seed has its own input capacitor.",
+           (38.1, 33.02))
+    gain_stage(s, "L", 66.04, 1, "J3", 17, 20, 16)
+    gain_stage(s, "R", 167.64, 2, "J4", 23, 23, 17)
+    s.text("U3 supply and decoupling", (279.4, 96.52), 1.5)
+    opamp_power(s, "U3", "NE5532", NE5532_FIELDS, (287.02, 119.38), "C26", "C27")
+
 
 def opamp_power(s, ref, value, fields, at, cpos, cneg, lib=NE5532):
     x, y = at
@@ -399,6 +499,13 @@ def build():
                file_uuid=uid("file", "input-inst"), pwr_base=200)
     inst_buffer(it)
     (OUT / "input-inst.kicad_sch").write_text(it.render())
+
+    gn_uuid = root.subsheet("Input gain and ADC pad", "input-gain.kicad_sch", (25.4, 76.2), (50.8, 25.4), "5")
+    gn = Sheet(libs, PROJECT, root_path + "/" + gn_uuid, paper="A3",
+               title="Plug & Roll - Main board - Input gain and ADC pad", rev="0.1",
+               file_uuid=uid("file", "input-gain"), pwr_base=300)
+    input_gain(gn)
+    (OUT / "input-gain.kicad_sch").write_text(gn.render())
 
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "main-board.kicad_sch").write_text(root.render(root_page="1"))

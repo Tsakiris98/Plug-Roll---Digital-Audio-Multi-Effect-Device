@@ -145,6 +145,47 @@
 			)
 		)
 	)
+	(sheet
+		(at 25.4 76.2)
+		(size 50.8 25.4)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "8bed8b00-cc43-52e3-8178-e0e1f6c7ca5b")
+		(property "Sheetname" "Input gain and ADC pad"
+			(at 25.4 75.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "input-gain.kicad_sch"
+			(at 25.4 102.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "main-board"
+				(path "/2cce0cd6-b775-4f9e-a478-0bfadfac04cb"
+					(page "5")
+				)
+			)
+		)
+	)
 	(sheet_instances
 		(path "/"
 			(page "1")
