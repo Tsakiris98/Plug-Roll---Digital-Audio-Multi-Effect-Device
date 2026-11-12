@@ -1,0 +1,31 @@
+# macOS
+.DS_Store
+
+# Office lock files
+~$*
+
+# Personal files, not part of the repository
+project managment.docx
+
+# KiCad local / temporary files
+*.kicad_prl
+*-backups/
+fp-info-cache
+_autosave-*
+*.lck
+~*.lck
+\#auto_saved_files#
+
+# Firmware build output
+firmware/**/build/
+*.o
+*.d
+*.elf
+*.map
+*.hex
+*.bin
+
+# Editors
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
