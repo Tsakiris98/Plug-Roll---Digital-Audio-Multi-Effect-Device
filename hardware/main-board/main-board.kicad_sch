@@ -186,6 +186,47 @@
 			)
 		)
 	)
+	(sheet
+		(at 101.6 76.2)
+		(size 50.8 25.4)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "6b6cb9b5-6614-59d8-aa62-7ff72e9e7ae8")
+		(property "Sheetname" "DAC gain and bypass"
+			(at 101.6 75.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "output-dac.kicad_sch"
+			(at 101.6 102.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "main-board"
+				(path "/2cce0cd6-b775-4f9e-a478-0bfadfac04cb"
+					(page "6")
+				)
+			)
+		)
+	)
 	(sheet_instances
 		(path "/"
 			(page "1")

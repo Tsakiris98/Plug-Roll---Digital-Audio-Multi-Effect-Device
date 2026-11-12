@@ -40,6 +40,9 @@ R5K6 = "JLCPCB:0603WAF5601T5E"     # 5.6 k 1 %, C23189
 R100K = "JLCPCB:0603WAF1003T5E"    # 100 k 1 %, C25803
 C2N2 = "JLCPCB:0603CG222J500NT"    # 2.2 nF C0G 50 V, C2991172
 JACK35 = "JLCPCB:PJ-327A5JJ"       # 3.5 mm stereo, SMD: 1, 2 = sleeve, 3 = ring, 4 = tip, 5 = tip switch
+NMOS = "Transistor_FET:AO3400A"    # pin 1 = gate, 2 = source, 3 = drain
+NMOS_FIELDS = {"Footprint": "JLCPCB:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR", "LCSC": "C20917",
+               "MPN": "AO3400A", "Manufacturer": "AOS"}
 TL072 = "Amplifier_Operational:TL072"
 TL072_FIELDS = {"Footprint": "JLCPCB:SOIC-8_L5.0-W4.0-P1.27-LS6.0-BL", "LCSC": "C6961",
                 "MPN": "TL072CDT", "Manufacturer": "STMicroelectronics"}
@@ -242,11 +245,16 @@ def jacks_and_switching(s):
                    top={2: ("global", "LINE_L_HOT"), 4: ("global", "INST_IN"), 7: None, 5: None},
                    bottom={3: ("local", "L_TIP"), 6: None})
     p2, m2 = relay(s, "K2", 248.92, yk,
-                   top={2: ("global", "LINE_L_OUT"), 4: ("global", "INST_OUT"),
-                        7: ("global", "LINE_R_OUT"), 5: ("global", "INST_OUT")},
+                   top={2: ("local", "LINE_L_AC"), 4: ("local", "INST_AC"),
+                        7: ("local", "LINE_R_AC"), 5: ("local", "INST_AC")},
                    bottom={3: ("global", "CH_L_IN"), 6: ("global", "CH_R_IN")})
     s.text("K1: Left tip to the LINE receiver or to the INST buffer.\nSecond contact set not used.", (180.34, 104.14))
     s.text("K2: each channel takes its LINE receiver or the INST buffer.", (241.3, 104.14))
+    # coupling capacitors in front of K2: both sides of every contact rest at 0 V DC
+    s.text("Coupling capacitors in front of K2", (304.8, 43.18), 1.5)
+    s.text("The three sources reach K2 without their DC offset,\nso switching INST / LINE gives no DC step (click).", (304.8, 134.62))
+    for i, (src, dst) in enumerate((("LINE_L_OUT", "LINE_L_AC"), ("LINE_R_OUT", "LINE_R_AC"), ("INST_OUT", "INST_AC"))):
+        ac_couple(s, src, dst, f"C{28 + i}", f"R{29 + i}", 320.04, 55.88 + 22.86 * i)
     # coils: + to 5 V, - to the panel toggle (which closes to ground). No transistor, no Daisy pin.
     yr = 127.0
     for p in (p1, p2):
@@ -445,6 +453,124 @@ def input_gain(s):
     s.text("U3 supply and decoupling", (279.4, 96.52), 1.5)
     opamp_power(s, "U3", "NE5532", NE5532_FIELDS, (287.02, 119.38), "C26", "C27")
 
+def ac_couple(s, src, dst, cref, rref, x, y, src_kind="global"):
+    """src label -> 10 uF -> (100k to ground) -> dst local label."""
+    (s.glabel if src_kind == "global" else s.label)(src, (x, y), 180)
+    c = s.add(C10U, cref, "10u 50V", (x + 15.24, y))
+    s.wire((x, y), c.left)
+    s.wire(c.right, (x + 43.18, y))
+    to_ground(s, R100K, rref, "100k", x + 30.48, y)
+    s.label(dst, (x + 43.18, y))
+    net(src, cref)
+    net(dst, cref, rref)
+
+
+def dac_stage(s, ch, y, unit, r, c, pin):
+    """Daisy DAC output -> x6.6 -> coupling capacitor -> DSP_<ch> (to the bypass relay)."""
+    R = lambda i: f"R{r + i}"
+    C = lambda i: f"C{c + i}"
+    s.text(f"{'LEFT' if ch == 'L' else 'RIGHT'} channel: DAC gain x6.6 (+16.4 dB) = 1 + 5k6 / 1k", (38.1, y - 17.78), 1.5)
+    s.glabel(f"DAC_OUT_{ch}", (48.26, y), 180)
+    s.text(f"from Daisy Seed pin {pin}", (27.94, y + 5.08))
+    u = s.add(NE5532, "U4", "NE5532", (99.06, y + 2.54), unit=unit, fields=NE5532_FIELDS,
+              ref_at=(106.68, y - 5.08), val_at=(106.68, y - 2.54))
+    pin_minus, pin_plus, pin_out = (2, 3, 1) if unit == 1 else (6, 5, 7)
+    pm, pp, po = u.pin(pin_minus), u.pin(pin_plus), u.pin(pin_out)
+    assert pp == (91.44, y), pp
+    s.wire((48.26, y), pp)
+    to_ground(s, R100K, R(0), "100k", 66.04, y)
+    xm, xo = 86.36, 116.84
+    y1, y2 = round(y + 22.86, 2), round(y + 33.02, 2)
+    rf = s.add(R5K6, R(1), "5k6", (101.6, y1))
+    cf = s.add(C100P, C(0), C100P_V, (101.6, y2))
+    s.wire(pm, (xm, pm[1]), (xm, y1), (xm, y2), cf.left)
+    s.wire((xm, y1), rf.left)
+    s.wire(po, (xo, po[1]), (xo, y1), (xo, y2), cf.right)
+    s.wire(rf.right, (xo, y1))
+    for pt in ((xm, y1), (xo, y1), (xo, po[1])):
+        s.junction(pt)
+    rg = s.add(R1K, R(2), "1k", (73.66, y1 + 7.62), rot=90)
+    s.wire((xm, y1), (73.66, y1), rg.top)
+    b = rg.bottom
+    s.wire(b, (b[0], b[1] + 2.54))
+    s.power("GNDA", (b[0], b[1] + 2.54))
+    cc = s.add(C10U, C(1), "10u 50V", (132.08, po[1]))
+    s.wire((xo, po[1]), cc.left)
+    s.wire(cc.right, (160.02, po[1]))
+    to_ground(s, R100K, R(3), "100k", 147.32, po[1])
+    s.label(f"DSP_{ch}", (160.02, po[1]))
+    net(f"DAC_OUT_{ch}", R(0), f"U4.{pin_plus}")
+    net("GNDA", R(2))
+    net(f"{ch}_dac_fb", f"U4.{pin_minus}", R(1), C(0), R(2))
+    net(f"{ch}_dac_amp", f"U4.{pin_out}", R(1), C(0), C(1))
+    net(f"DSP_{ch}", C(1), R(3))
+
+
+def output_dac(s):
+    s.text("DAC GAIN AND GLOBAL BYPASS", (38.1, 25.4), 2.0)
+    s.text("The Daisy output (1.0 Vrms at 0 dBFS) is amplified to the level of the hot node, so the effect path and the analog bypass path\n"
+           "reach the bypass relay at the same level. No bias: the Seed has its own output capacitor.", (38.1, 33.02))
+    dac_stage(s, "L", 71.12, 1, 32, 31, 18)
+    dac_stage(s, "R", 167.64, 2, 36, 33, 19)
+    # bypass sources from the input section
+    s.text("Analog bypass signal from the input section", (203.2, 162.56), 1.5)
+    ac_couple(s, "HOT_L", "BYP_L", "C35", "R40", 220.98, 175.26)
+    ac_couple(s, "HOT_R", "BYP_R", "C36", "R41", 220.98, 198.12)
+    # relay
+    s.text("BYPASS RELAY. Drawn released (no coil current) = analog bypass. BYPASS_RELAY high = effect path.", (203.2, 50.8), 1.5)
+    yk = 83.82
+    p1, m1 = relay(s, "K3", 279.4, yk,
+                   top={2: ("local", "BYP_L"), 4: ("local", "DSP_L"), 7: ("local", "BYP_R"), 5: ("local", "DSP_R")},
+                   bottom={3: ("global", "OUT_SEL_L"), 6: ("global", "OUT_SEL_R")})
+    s.wire(p1, (p1[0], p1[1] - 5.08))
+    s.power("+5V", (p1[0], p1[1] - 5.08))
+    yr = round(yk + 40.64, 2)
+    xd, xq = round(m1[0] - 12.7, 2), round(m1[0] - 20.32, 2)
+    s.wire(m1, (m1[0], yr), (xd, yr), (xq, yr))
+    s.junction((xd, yr))
+    d = s.add(D4148, "D7", "1N4148W", (xd, yr - 10.16), rot=270, ref_at=(xd + 7.62, yr - 11.43), val_at=(xd + 7.62, yr - 8.89))
+    kk, aa = d.pin(1), d.pin(2)
+    assert kk[1] < aa[1], (kk, aa)
+    s.wire(aa, (xd, yr))
+    s.wire(kk, (kk[0], kk[1] - 2.54))
+    s.power("+5V", (kk[0], kk[1] - 2.54))
+    q1 = s.add(NMOS, "Q1", "AO3400A", (xq - 2.54, yr + 10.16), fields=NMOS_FIELDS,
+               ref_at=(xq + 10.16, yr + 8.89), val_at=(xq + 10.16, yr + 11.43))
+    g, src, drn = q1.pin(1), q1.pin(2), q1.pin(3)
+    assert drn[0] == xq and drn[1] < src[1], (g, src, drn)
+    s.wire((xq, yr), drn)
+    s.wire(src, (src[0], src[1] + 2.54))
+    s.power("GND", (src[0], src[1] + 2.54))
+    xg = round(g[0] - 5.08, 2)
+    s.wire(g, (xg, g[1]))
+    s.junction((xg, g[1]))
+    rpd = s.add(R100K, "R43", "100k", (xg, g[1] + 7.62), rot=90)
+    s.wire((xg, g[1]), rpd.top)
+    b = rpd.bottom
+    s.wire(b, (b[0], b[1] + 2.54))
+    s.power("GND", (b[0], b[1] + 2.54))
+    rg = s.add(R100, "R42", "100R", (xg - 10.16, g[1]))
+    s.wire(rg.right, (xg, g[1]))
+    l = rg.left
+    s.wire(l, (l[0] - 5.08, l[1]))
+    s.glabel("BYPASS_RELAY", (l[0] - 5.08, l[1]), 180)
+    s.text("R43 keeps the transistor off until the Daisy drives the line: at power-on, in reset and\n"
+           "with the Seed removed the relay stays released = bypass. D7 absorbs the coil's switch-off spike.", (289.56, yr + 12.7))
+    cd = s.add(C100N, "C39", "100n", (350.52, 81.28), rot=90)
+    t_, b_ = cd.top, cd.bottom
+    s.wire(t_, (t_[0], t_[1] - 2.54))
+    s.power("+5V", (t_[0], t_[1] - 2.54))
+    s.wire(b_, (b_[0], b_[1] + 2.54))
+    s.power("GND", (b_[0], b_[1] + 2.54))
+    s.text("5 V decoupling at K3", (365.76, 82.55))
+    s.text("U4 supply and decoupling", (332.74, 180.34), 1.5)
+    opamp_power(s, "U4", "NE5532", NE5532_FIELDS, (340.36, 203.2), "C37", "C38")
+    net("+5V", "K3.1", "D7.1", "C39.2")
+    net("bypass_drv", "K3.8", "D7.2", "Q1.3")
+    net("GND", "Q1.2", "R43", "C39.1")
+    net("q1_gate", "Q1.1", "R42", "R43")
+    net("BYPASS_RELAY", "R42")
+
 
 def opamp_power(s, ref, value, fields, at, cpos, cneg, lib=NE5532):
     x, y = at
@@ -506,6 +632,13 @@ def build():
                file_uuid=uid("file", "input-gain"), pwr_base=300)
     input_gain(gn)
     (OUT / "input-gain.kicad_sch").write_text(gn.render())
+
+    od_uuid = root.subsheet("DAC gain and bypass", "output-dac.kicad_sch", (101.6, 76.2), (50.8, 25.4), "6")
+    od = Sheet(libs, PROJECT, root_path + "/" + od_uuid, paper="A3",
+               title="Plug & Roll - Main board - DAC gain and global bypass", rev="0.1",
+               file_uuid=uid("file", "output-dac"), pwr_base=400)
+    output_dac(od)
+    (OUT / "output-dac.kicad_sch").write_text(od.render())
 
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "main-board.kicad_sch").write_text(root.render(root_page="1"))

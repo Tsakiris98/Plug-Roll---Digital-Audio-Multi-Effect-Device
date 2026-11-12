@@ -319,14 +319,16 @@ outputs are muted during power-up and power-down (output section), so this is
 not heard. With the control board unplugged the relays stay released = LINE,
 the safe state (LINE accepts up to about +24 dBu).
 
-**Trade-off (accepted).** Until v0.4 the Daisy drove the relays, so the
-firmware could mute, switch and unmute. Without that, moving the toggle while
-the volume is up may give a click: the two sources of a relay contact (LINE
-receiver and INST buffer outputs) sit at slightly different DC voltages, and
-the step is amplified by the ×11 stage. It is measured on the prototype
-(section 11.2). If it is objectionable, the remedies are analog: a coupling
-capacitor after K2, or going back to the transistor driver (one transistor,
-two resistors, one Daisy pin).
+**Click without a firmware mute.** Until v0.4 the Daisy drove the relays, so
+the firmware could mute, switch and unmute. Without that, a click would come
+from the two sources of a relay contact (LINE receiver and INST buffer
+outputs) sitting at slightly different DC voltages, a step that the ×11 stage
+amplifies. Therefore each of the three sources reaches K2 through a coupling
+capacitor (10 µF, 50 V) with 100 kΩ to ground on the relay side: both sides
+of every contact rest at 0 V. This also takes the sources' DC offset off the
+gain pot. Low corner with the 10 kΩ pot: 1.6 Hz (3.2 Hz in INST, where one
+capacitor feeds both pot sections). Residual click measured on the prototype
+(section 11.2); the fallback is the transistor driver with a firmware mute.
 
 GPIOs used by the input section: **none.**
 

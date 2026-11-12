@@ -1,7 +1,9 @@
 # CLAUDE.md — Plug & Roll
 
-Instructions for Claude when working in this repository. Read this file and
-`docs/requirements.md` at the start of every session.
+Instructions for Claude when working in this repository. Read this file,
+`docs/STATUS.md` (where the work stands and what comes next) and
+`docs/requirements.md` at the start of every session. Update `docs/STATUS.md`
+at the end of every session.
 
 ## Project
 
