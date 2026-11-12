@@ -1,7 +1,7 @@
 # Input Section — Design Note (v0.5, 2026-11-12)
 
 Status: **architecture and parts approved; schematic in progress** (drawn so
-far: input jacks, INST/LINE relays and driver, LINE receivers). Every number marked
+far: input jacks, INST/LINE relays, LINE receivers, INST buffer). Every number marked
 *(measure)* is provisional until it is measured on the real Daisy Seed Rev 5.
 
 Changes from v0.4 (decision of 2026-11-12): **no digital control of analog
@@ -423,8 +423,13 @@ Right receiver. That is why the normalling is done at the receiver input.
   audio choice, but through-hole and hand-soldered. Low-frequency distortion
   is checked on the prototype *(measure)*. 1206 is an exception to the 0603
   rule: 10 µF at 50 V does not exist in 0603.
-- **INST input.** 1 kΩ series resistor, 100 pF to ground, BAV99 to the rails,
-  100 nF (X7R, 50 V) blocking capacitor into 1 MΩ (1.6 Hz corner). The 1 kΩ is a
+- **INST input.** 1 kΩ series resistor, 100 pF to ground, 100 nF (X7R, 50 V)
+  blocking capacitor into 1 MΩ (1.6 Hz corner), BAV99 to the rails directly at
+  the op-amp input. The clamp sits after the capacitor on purpose: a voltage
+  step at the jack passes through the capacitor unchanged, so a clamp in front
+  of it would not protect the op-amp input. The capacitor itself is rated
+  50 V. Cost: the leakage current of the diodes flows through the 1 MΩ and
+  adds a small DC offset at the buffer output *(measure)*. The 1 kΩ is a
   compromise: larger protects better but adds hiss (1 kΩ adds 4 nV/√Hz against
   the 15 nV/√Hz of the op-amp).
 - **Daisy pin.** Protected by the pad (section 3). No diodes.

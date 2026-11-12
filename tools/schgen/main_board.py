@@ -31,6 +31,12 @@ D4148 = "JLCPCB:1N4148W_C81598"    # pin 1 = cathode, pin 2 = anode
 RELAY = "Relay:G6K-2"
 RELAY_FIELDS = {"Footprint": "JLCPCB:RELAY-SMD_G6K-2F-Y", "LCSC": "C2982926",
                 "MPN": "G6K-2F-Y-5V", "Manufacturer": "Omron"}
+R1K = "JLCPCB:0603WAF1001T5E"      # 1 k 1 %, C21190
+R3K = "JLCPCB:0603WAF3001T5E"      # 3 k 1 %, C4211
+R1M = "JLCPCB:0603WAF1004T5E"      # 1 M 1 %, C22935
+TL072 = "Amplifier_Operational:TL072"
+TL072_FIELDS = {"Footprint": "JLCPCB:SOIC-8_L5.0-W4.0-P1.27-LS6.0-BL", "LCSC": "C6961",
+                "MPN": "TL072CDT", "Manufacturer": "STMicroelectronics"}
 NE5532 = "Amplifier_Operational:NE5532"
 NE5532_FIELDS = {"Footprint": "JLCPCB:SOIC-8_L4.9-W3.9-P1.27-LS6.0-BL", "LCSC": "C7426",
                  "MPN": "NE5532DR", "Manufacturer": "Texas Instruments"}
@@ -268,10 +274,81 @@ def jacks_and_switching(s):
     net("INST_SW", "K1.8", "K2.8", "D5.2")
     net("GND", "C15.1")
 
+def inst_buffer(s):
+    """Instrument input: 1 Mohm, gain x4 (+12 dB), TL072."""
+    y = 101.6
+    s.text("INST BUFFER", (38.1, 60.96), 2.0)
+    s.text("Instrument (guitar) input, used only in INST mode. Input resistance 1 Mohm, gain x4 (+12 dB) = 1 + R15/R16.",
+           (38.1, 68.58))
+    s.glabel("INST_IN", (50.8, y), 180)
+    r13 = s.add(R1K, "R13", "1k", (66.04, y))
+    s.wire((50.8, y), r13.left)
+    c17 = s.add(C100N, "C17", "100n", (96.52, y))
+    s.wire(r13.right, c17.left)
+    rf_cap(s, "C16", 81.28, y)
+    u = s.add(TL072, "U2", "TL072", (170.18, y + 2.54), unit=1, fields=TL072_FIELDS,
+              ref_at=(177.8, y - 5.08), val_at=(177.8, y - 2.54))
+    pp, pm, po = u.pin(3), u.pin(2), u.pin(1)
+    assert pp == (162.56, y) and pm == (162.56, round(y + 5.08, 2)), (pp, pm)
+    s.wire(c17.right, (111.76, y), (139.7, y), pp)
+    # 1 Mohm to ground: sets the input resistance and the DC level of the op-amp input
+    r14 = s.add(R1M, "R14", "1M", (111.76, y + 7.62), rot=90)
+    s.junction((111.76, y))
+    s.wire((111.76, y), r14.top)
+    b = r14.bottom
+    s.wire(b, (b[0], b[1] + 2.54))
+    s.power("GNDA", (b[0], b[1] + 2.54))
+    # clamp to the rails, directly at the op-amp input
+    d = s.add(BAV99, "D6", "BAV99", (139.7, y + 10.16), mirror="y", ref_at=(125.73, y + 7.62), val_at=(125.73, y + 10.16))
+    assert d.pin(3) == (139.7, y), d.pin(3)
+    s.junction((139.7, y))
+    a, k = d.pin(1), d.pin(2)              # anode -> -12 V, cathode -> +12 V
+    s.wire(a, (a[0], a[1] + 2.54))
+    s.power("-12V", (a[0], a[1] + 2.54), rot=180)
+    s.wire(k, (k[0], k[1] + 2.54), (k[0] - 10.16, k[1] + 2.54), (k[0] - 10.16, k[1] - 2.54))
+    s.power("+12V", (k[0] - 10.16, k[1] - 2.54))
+    # output and feedback
+    xo, yf = 187.96, y + 20.32
+    s.wire(po, (xo, po[1]), (198.12, po[1]))
+    s.junction((xo, po[1]))
+    s.glabel("INST_OUT", (198.12, po[1]))
+    r15 = s.add(R3K, "R15", "3k", (172.72, yf))
+    s.wire((xo, po[1]), (xo, yf), r15.right)
+    xm = 157.48
+    s.wire(r15.left, (xm, yf), (xm, pm[1]), pm)
+    s.junction((xm, yf))
+    r16 = s.add(R1K, "R16", "1k", (xm, yf + 7.62), rot=90)
+    s.wire((xm, yf), r16.top)
+    b = r16.bottom
+    s.wire(b, (b[0], b[1] + 2.54))
+    s.power("GNDA", (b[0], b[1] + 2.54))
+    s.text("R13 limits the current of an overvoltage, C16 shorts radio frequencies,\n"
+           "C17 blocks DC from the source, D6 keeps the op-amp input inside the +/-12 V rails.", (38.1, 147.32))
+    # second half of U2: not used, wired as a follower of ground so it stays quiet
+    s.text("Unused half of U2", (220.98, 91.44), 1.5)
+    u2 = s.add(TL072, "U2", "TL072", (238.76, y + 2.54), unit=2, fields=TL072_FIELDS,
+               ref_at=(246.38, y - 5.08), val_at=(246.38, y - 2.54))
+    p5, p6, p7 = u2.pin(5), u2.pin(6), u2.pin(7)
+    s.wire(p5, (223.52, p5[1]), (223.52, p5[1] + 2.54))
+    s.power("GNDA", (223.52, p5[1] + 2.54))
+    s.wire(p6, (228.6, p6[1]), (228.6, y + 17.78), (251.46, y + 17.78), (251.46, p7[1]), p7)
+    s.text("U2 supply and decoupling", (269.24, 96.52), 1.5)
+    opamp_power(s, "U2", "TL072", TL072_FIELDS, (276.86, 119.38), "C18", "C19", lib=TL072)
 
-def opamp_power(s, ref, value, fields, at, cpos, cneg):
+    net("INST_IN", "R13")
+    net("inst_a", "R13", "C16", "C17")
+    net("inst_plus", "C17", "R14", "D6.3", "U2.3")
+    net("GNDA", "R14", "R16", "U2.5")
+    net("inst_fb", "U2.2", "R15", "R16")
+    net("INST_OUT", "U2.1", "R15")
+    net("inst_spare", "U2.6", "U2.7")
+    net("+12V", "D6.2")
+    net("-12V", "D6.1")
+
+
+def opamp_power(s, ref, value, fields, at, cpos, cneg, lib=NE5532):
     x, y = at
-    u = s.add(NE5532, ref, value, at, unit=3, fields=fields, ref_at=(x + 3.81, y - 1.27), val_at=(x + 3.81, y + 1.27))
+    u = s.add(lib, ref, value, at, unit=3, fields=fields, ref_at=(x + 3.81, y - 1.27), val_at=(x + 3.81, y + 1.27))
     vp, vn = u.pin(8), u.pin(4)
     xc = x + 12.7
     c1 = s.add(C100N, cpos, "100n", (xc, vp[1] - 2.54 + 5.08), rot=90)
@@ -315,6 +392,13 @@ def build():
     line_receiver(inp, "R", 111.76, 2, {"R": 7, "C": 5, "D": 3})
     inp.text("U1 supply and decoupling", (269.24, 96.52), 1.5)
     opamp_power(inp, "U1", "NE5532", NE5532_FIELDS, (276.86, 119.38), "C9", "C10")
+
+    it_uuid = root.subsheet("INST buffer", "input-inst.kicad_sch", (177.8, 38.1), (50.8, 25.4), "4")
+    it = Sheet(libs, PROJECT, root_path + "/" + it_uuid, paper="A3",
+               title="Plug & Roll - Main board - INST buffer", rev="0.1",
+               file_uuid=uid("file", "input-inst"), pwr_base=200)
+    inst_buffer(it)
+    (OUT / "input-inst.kicad_sch").write_text(it.render())
 
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "main-board.kicad_sch").write_text(root.render(root_page="1"))
