@@ -116,6 +116,34 @@ needed, not in advance. Known manual steps:
   commit or push without his approval. Commit messages describe the design
   change, not just the files.
 
+## Session routine (keeps context small and the work consistent)
+
+The repository is the memory, not the conversation. A fresh session must be
+able to continue from the files alone.
+
+**Start of a session** (Antonios writes "Διάβασε το STATUS και συνέχισε"):
+read this file and `docs/STATUS.md`; then only the requirements section,
+design note and code that the next step needs. Do not reread whole files or
+old conversation history without a reason.
+
+**End of every completed step** (a step = one item of "Next steps" in
+`docs/STATUS.md`), without being asked:
+1. Update `docs/STATUS.md`: "Stopped here", the block table, the ERC state,
+   the next action, next free references and page / `pwr_base`, open checks.
+2. If a decision changed: `docs/requirements.md` (with a line in its change
+   list), the design note of the block, and `STATUS.md`, in the same commit.
+3. Propose the commit and the push; do them on approval.
+4. Then remind Antonios, in Greek, in one short block:
+   - that the step is saved and nothing is lost by clearing;
+   - to type `/clear` (or open a new session in this folder if `/clear` is
+     not available) instead of continuing a long conversation;
+   - to start the next session with "Διάβασε το STATUS και συνέχισε";
+   - anything he must do before then (save a datasheet into
+     `docs/datasheet/`, close KiCad, a measurement).
+
+Prefer `/clear` to compacting: compacting rereads the whole conversation once
+to summarise it, while everything worth keeping is already in the files.
+
 ## Firmware rules
 
 - 48 kHz, 32-bit float, block size about 48 samples.
