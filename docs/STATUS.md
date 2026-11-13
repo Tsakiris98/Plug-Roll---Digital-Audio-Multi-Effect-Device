@@ -22,6 +22,54 @@ JLCPCB part search that works: open
 pane, wait about 9 s, then read the table rows from the page. Calling the
 site's search API directly in a burst gets blocked (403).
 
+## How to resume in a fresh session
+
+The conversation history is not needed and is not kept: everything that
+matters is in the repository. Read, in this order, and nothing else until a
+step needs it:
+
+1. `CLAUDE.md` (rules), this file (state and next action).
+2. `docs/requirements.md` only for the block being worked on.
+3. The design note of that block (`input-section.md`, `output-section.md`,
+   `power-section.md`). Each note records the decision, the reason, the
+   datasheet source and what is still to be measured.
+4. `tools/schgen/main_board.py` only around the function being changed.
+
+When an earlier decision changes: update `requirements.md` (with a line in
+its change list at the top), the design note of the block, and this file, in
+the same commit. That trail is how later sessions know what was changed and
+why.
+
+## Working conventions (learned the hard way)
+
+- Antonios writes Greek; explain in plain Greek, repository files in English.
+  Every hardware decision is explained (what, why, cost of the alternative)
+  and approved before it is drawn. Small steps, commit after each, ask before
+  pushing.
+- Schematic generator: one function per sheet in `main_board.py`, registered
+  in `build()` with its own page number and `pwr_base` (next free: page 11,
+  `pwr_base` 900). Helpers already there: `rf_cap`, `to_ground`, `hang`,
+  `vert`, `gnd_below`, `ac_couple`, `relay`, `follower`, `opamp_power`,
+  `out_jack`. Every connection is declared with `net(...)` and checked by
+  `verify.py`; for a two-pin part that sits between a rail and ground, name
+  the pin (`"C15.1"`) when the net would otherwise be ambiguous.
+- Next free references: R60, C67, D17, U10, K6, J10, Q2, PS3, F2, L3.
+- Cross-sheet signals use global labels (`s.glabel`); labels inside one sheet
+  use `s.label`. Multi-line texts use `\n` in the Python string.
+- Stock KiCad symbols are used for op-amps, relays and the MOSFET (readable
+  drawings), always with the JLCPCB footprint and `LCSC` field given in the
+  script. Everything else comes from the JLCPCB library.
+- `add_part.sh` post-processes new library symbols (passive pins for non-IC
+  parts, hidden pin numbers on R/C, arcs redrawn as lines, ASCII-only
+  fields). Power modules and regulators needed their pins set to passive by
+  hand to keep ERC quiet.
+- Datasheet PDFs from JLCPCB/LCSC cannot be downloaded automatically. Ask
+  Antonios to save them into `docs/datasheet/` (not committed). Manufacturer
+  sites (onsemi, TI, Mornsun) can be fetched and read with pymupdf in a
+  scratch virtual environment.
+- Never state a datasheet figure from memory. One mistake so far came from
+  reading a revision note too fast (the "discontinued" MC79M12).
+
 ## Where we are
 
 Phase 1, main board, schematic in progress. Requirements are at **v0.7**.
