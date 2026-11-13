@@ -63,7 +63,7 @@
 					)
 				)
 			)
-			(property "Description" "10uF (106) ±10% 50V"
+			(property "Description" "10uF (106) 10% 50V"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -74,7 +74,7 @@
 					)
 				)
 			)
-			(property "Manufacturer" "SAMSUNG(三星)"
+			(property "Manufacturer" "SAMSUNG"
 				(at 0 -12.7 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -282,7 +282,7 @@
 					)
 				)
 			)
-			(property "Manufacturer" "YAGEO(国巨)"
+			(property "Manufacturer" "YAGEO"
 				(at 0 -12.7 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -447,7 +447,7 @@
 					)
 				)
 			)
-			(property "Manufacturer" "Nexperia(安世)"
+			(property "Manufacturer" "Nexperia"
 				(at 0 -22.86 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -757,7 +757,7 @@
 					)
 				)
 			)
-			(property "Description" "100pF (101) ±5% 50V"
+			(property "Description" "100pF (101) 5% 50V"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -768,7 +768,7 @@
 					)
 				)
 			)
-			(property "Manufacturer" "SAMSUNG(三星)"
+			(property "Manufacturer" "SAMSUNG"
 				(at 0 -12.7 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -1606,7 +1606,7 @@
 					)
 				)
 			)
-			(property "Description" "100nF (104) ±10% 50V"
+			(property "Description" "100nF (104) 10% 50V"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -1617,7 +1617,7 @@
 					)
 				)
 			)
-			(property "Manufacturer" "YAGEO(国巨)"
+			(property "Manufacturer" "YAGEO"
 				(at 0 -12.7 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -3033,7 +3033,7 @@
 				)
 			)
 		)
-		(property "Description" "10uF (106) ±10% 50V"
+		(property "Description" "10uF (106) 10% 50V"
 			(at 99.06 127 0)
 			(hide yes)
 			(effects
@@ -3042,7 +3042,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "SAMSUNG(三星)"
+		(property "Manufacturer" "SAMSUNG"
 			(at 99.06 127 0)
 			(hide yes)
 			(effects
@@ -3145,7 +3145,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "YAGEO(国巨)"
+		(property "Manufacturer" "YAGEO"
 			(at 116.84 127 0)
 			(hide yes)
 			(effects
@@ -3249,7 +3249,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Nexperia(安世)"
+		(property "Manufacturer" "Nexperia"
 			(at 132.08 137.16 0)
 			(hide yes)
 			(effects
@@ -3355,7 +3355,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "YAGEO(国巨)"
+		(property "Manufacturer" "YAGEO"
 			(at 149.86 137.16 0)
 			(hide yes)
 			(effects
@@ -3458,7 +3458,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "YAGEO(国巨)"
+		(property "Manufacturer" "YAGEO"
 			(at 167.64 137.16 0)
 			(hide yes)
 			(effects
@@ -3552,7 +3552,7 @@
 				)
 			)
 		)
-		(property "Description" "100pF (101) ±5% 50V"
+		(property "Description" "100pF (101) 5% 50V"
 			(at 185.42 138.43 0)
 			(hide yes)
 			(effects
@@ -3561,7 +3561,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "SAMSUNG(三星)"
+		(property "Manufacturer" "SAMSUNG"
 			(at 185.42 138.43 0)
 			(hide yes)
 			(effects
@@ -3655,7 +3655,7 @@
 				)
 			)
 		)
-		(property "Description" "10uF (106) ±10% 50V"
+		(property "Description" "10uF (106) 10% 50V"
 			(at 99.06 99.06 0)
 			(hide yes)
 			(effects
@@ -3664,7 +3664,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "SAMSUNG(三星)"
+		(property "Manufacturer" "SAMSUNG"
 			(at 99.06 99.06 0)
 			(hide yes)
 			(effects
@@ -3767,7 +3767,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "YAGEO(国巨)"
+		(property "Manufacturer" "YAGEO"
 			(at 116.84 99.06 0)
 			(hide yes)
 			(effects
@@ -3870,7 +3870,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Nexperia(安世)"
+		(property "Manufacturer" "Nexperia"
 			(at 132.08 88.9 0)
 			(hide yes)
 			(effects
@@ -4529,7 +4529,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "YAGEO(国巨)"
+		(property "Manufacturer" "YAGEO"
 			(at 213.36 83.82 0)
 			(hide yes)
 			(effects
@@ -4632,7 +4632,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "YAGEO(国巨)"
+		(property "Manufacturer" "YAGEO"
 			(at 213.36 71.12 0)
 			(hide yes)
 			(effects
@@ -4726,7 +4726,7 @@
 				)
 			)
 		)
-		(property "Description" "100pF (101) ±5% 50V"
+		(property "Description" "100pF (101) 5% 50V"
 			(at 213.36 58.42 0)
 			(hide yes)
 			(effects
@@ -4735,7 +4735,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "SAMSUNG(三星)"
+		(property "Manufacturer" "SAMSUNG"
 			(at 213.36 58.42 0)
 			(hide yes)
 			(effects
@@ -4829,7 +4829,7 @@
 				)
 			)
 		)
-		(property "Description" "10uF (106) ±10% 50V"
+		(property "Description" "10uF (106) 10% 50V"
 			(at 99.06 238.76 0)
 			(hide yes)
 			(effects
@@ -4838,7 +4838,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "SAMSUNG(三星)"
+		(property "Manufacturer" "SAMSUNG"
 			(at 99.06 238.76 0)
 			(hide yes)
 			(effects
@@ -4941,7 +4941,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "YAGEO(国巨)"
+		(property "Manufacturer" "YAGEO"
 			(at 116.84 238.76 0)
 			(hide yes)
 			(effects
@@ -5045,7 +5045,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Nexperia(安世)"
+		(property "Manufacturer" "Nexperia"
 			(at 132.08 248.92 0)
 			(hide yes)
 			(effects
@@ -5151,7 +5151,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "YAGEO(国巨)"
+		(property "Manufacturer" "YAGEO"
 			(at 149.86 248.92 0)
 			(hide yes)
 			(effects
@@ -5254,7 +5254,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "YAGEO(国巨)"
+		(property "Manufacturer" "YAGEO"
 			(at 167.64 248.92 0)
 			(hide yes)
 			(effects
@@ -5348,7 +5348,7 @@
 				)
 			)
 		)
-		(property "Description" "100pF (101) ±5% 50V"
+		(property "Description" "100pF (101) 5% 50V"
 			(at 185.42 250.19 0)
 			(hide yes)
 			(effects
@@ -5357,7 +5357,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "SAMSUNG(三星)"
+		(property "Manufacturer" "SAMSUNG"
 			(at 185.42 250.19 0)
 			(hide yes)
 			(effects
@@ -5451,7 +5451,7 @@
 				)
 			)
 		)
-		(property "Description" "10uF (106) ±10% 50V"
+		(property "Description" "10uF (106) 10% 50V"
 			(at 99.06 210.82 0)
 			(hide yes)
 			(effects
@@ -5460,7 +5460,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "SAMSUNG(三星)"
+		(property "Manufacturer" "SAMSUNG"
 			(at 99.06 210.82 0)
 			(hide yes)
 			(effects
@@ -5563,7 +5563,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "YAGEO(国巨)"
+		(property "Manufacturer" "YAGEO"
 			(at 116.84 210.82 0)
 			(hide yes)
 			(effects
@@ -5666,7 +5666,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Nexperia(安世)"
+		(property "Manufacturer" "Nexperia"
 			(at 132.08 200.66 0)
 			(hide yes)
 			(effects
@@ -6325,7 +6325,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "YAGEO(国巨)"
+		(property "Manufacturer" "YAGEO"
 			(at 213.36 195.58 0)
 			(hide yes)
 			(effects
@@ -6428,7 +6428,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "YAGEO(国巨)"
+		(property "Manufacturer" "YAGEO"
 			(at 213.36 182.88 0)
 			(hide yes)
 			(effects
@@ -6522,7 +6522,7 @@
 				)
 			)
 		)
-		(property "Description" "100pF (101) ±5% 50V"
+		(property "Description" "100pF (101) 5% 50V"
 			(at 213.36 170.18 0)
 			(hide yes)
 			(effects
@@ -6531,7 +6531,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "SAMSUNG(三星)"
+		(property "Manufacturer" "SAMSUNG"
 			(at 213.36 170.18 0)
 			(hide yes)
 			(effects
@@ -6719,7 +6719,7 @@
 				)
 			)
 		)
-		(property "Description" "100nF (104) ±10% 50V"
+		(property "Description" "100nF (104) 10% 50V"
 			(at 289.56 114.3 0)
 			(hide yes)
 			(effects
@@ -6728,7 +6728,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "YAGEO(国巨)"
+		(property "Manufacturer" "YAGEO"
 			(at 289.56 114.3 0)
 			(hide yes)
 			(effects
@@ -6822,7 +6822,7 @@
 				)
 			)
 		)
-		(property "Description" "100nF (104) ±10% 50V"
+		(property "Description" "100nF (104) 10% 50V"
 			(at 289.56 124.46 0)
 			(hide yes)
 			(effects
@@ -6831,7 +6831,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "YAGEO(国巨)"
+		(property "Manufacturer" "YAGEO"
 			(at 289.56 124.46 0)
 			(hide yes)
 			(effects

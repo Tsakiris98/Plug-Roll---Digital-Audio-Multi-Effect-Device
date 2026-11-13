@@ -48,6 +48,15 @@ HDR16_FIELDS = {"Footprint": "JLCPCB:IDC-TH_16P-P2.54-V-R2-C8-S2.54", "LCSC": "C
 # NE5532, so the same triangle symbol is used with its own value and fields.
 OPA1688_FIELDS = {"Footprint": "JLCPCB:SOP-8_L4.9-W3.9-P1.27-LS6.0-BL", "LCSC": "C206212",
                   "MPN": "OPA1688IDR", "Manufacturer": "Texas Instruments"}
+# --- power section ---
+DCJACK = "JLCPCB:DC-005C-20A"      # C84007. Pad 1 rear (centre pin), pad 2 front (sleeve), pad 3 side (switch)
+PTC = "JLCPCB:SMD1812P200TF_24"    # C434887, holds 2 A
+SS34 = "JLCPCB:SS34_C8678"         # pin 1 = cathode, pin 2 = anode
+TVS18 = "JLCPCB:SMBJ18A_C353379"   # pin 1 = cathode, pin 2 = anode
+C470U = "JLCPCB:FZ470UF25V90RV0113"  # pin 1 = +
+C100U = "JLCPCB:JVE25V100M6X8"     # pin 1 = +
+C22U = "JLCPCB:CL31A226KAHNNNE"    # 22 uF 25 V X5R 1206
+K7805 = "JLCPCB:K7805-2000R3_C18212380"  # YLPTEC datasheet: 1 = +Vin, 2 = GND, 3 = +Vo
 NMOS = "Transistor_FET:AO3400A"    # pin 1 = gate, 2 = source, 3 = drain
 NMOS_FIELDS = {"Footprint": "JLCPCB:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR", "LCSC": "C20917",
                "MPN": "AO3400A", "Manufacturer": "AOS"}
@@ -764,6 +773,105 @@ def output_jacks(s):
     net("MUTE_SW", "K4.8", "K5.8", "D8.2")
     net("GND", "C50.1")
 
+def vert(s, lib, ref, value, x, y_top, rot=270, text_dx=7.62):
+    """Two-pin part drawn vertically with pin 1 on top (rot 270) at (x, y_top .. y_top+10.16). Returns (top, bottom)."""
+    part = s.add(lib, ref, value, (x, y_top + 5.08), rot=rot,
+                 ref_at=(x + text_dx, y_top + 3.81), val_at=(x + text_dx, y_top + 6.35))
+    a, b = part.pin(1), part.pin(2)
+    assert a[1] < b[1], (ref, a, b)
+    return a, b
+
+
+def gnd_below(s, pt, name="GND", d=2.54):
+    s.wire(pt, (pt[0], pt[1] + d))
+    s.power(name, (pt[0], pt[1] + d))
+
+
+def power_input(s):
+    s.text("POWER INPUT AND 5 V", (25.4, 20.32), 2.0)
+    s.text("Adapter: 12 V DC, 2 A or more, regulated, plug 5.5 x 2.1 mm, either polarity.\n"
+           "F1 limits a fault current. The four diodes D9-D12 pass the current the right way round whatever the polarity of the plug.\n"
+           "D14 clamps voltage spikes (plugging in a live adapter). D13 lets VIN_SENSE fall at once when the plug is pulled, while C53 keeps the converters fed.",
+           (25.4, 27.94))
+    yr, ya, yg = 60.96, 86.36, 111.76
+    xa, xb = 83.82, 104.14
+    # --- DC jack ---
+    j = s.add(DCJACK, "J9", "DC jack 5.5x2.1", (45.72, 78.74), ref_at=(40.64, 68.58), val_at=(40.64, 71.12))
+    p1, p2, p3 = j.pin(1), j.pin(2), j.pin(3)
+    assert p1 == (50.8, 77.47) and p2 == (50.8, 82.55), (p1, p2, p3)
+    s.no_connect(p3)
+    s.text("1 = centre pin, 2 = sleeve,\n3 = switch contact (not used)", (25.4, 96.52))
+    f1 = s.add(PTC, "F1", "PTC 2A", (66.04, ya))
+    s.wire(p1, (55.88, p1[1]), (55.88, ya), f1.left)
+    s.wire(f1.right, (xa, ya))
+    s.wire(p2, (53.34, p2[1]), (53.34, 124.46), (114.3, 124.46), (114.3, ya), (xb, ya))
+    # --- bridge ---
+    for i, x in enumerate((xa, xb)):
+        k1, a1 = vert(s, SS34, f"D{9 + i}", "SS34", x, 66.04, text_dx=-8.89)      # AC -> VRAW
+        k2, a2 = vert(s, SS34, f"D{11 + i}", "SS34", x, 96.52, text_dx=-8.89)     # GND -> AC
+        s.wire(k1, (x, yr))
+        s.wire(a1, (x, ya), k2)
+        s.junction((x, ya))
+        s.wire(a2, (x, yg))
+    s.wire((xa, yg), (xb, yg))
+    s.junction((93.98, yg))
+    gnd_below(s, (93.98, yg))
+    s.power("PWR_FLAG", (88.9, yg))
+    s.junction((88.9, yg))
+    # --- rail: sense node, TVS, series diode, bulk ---
+    d13 = s.add(SS34, "D13", "SS34", (152.4, yr), rot=180)
+    assert d13.pin(2) == (147.32, yr) and d13.pin(1) == (157.48, yr), (d13.pin(1), d13.pin(2))
+    s.wire((xa, yr), (xb, yr), (127.0, yr), (139.7, yr), d13.pin(2))
+    s.junction((xb, yr))
+    kt, at_ = vert(s, TVS18, "D14", "SMBJ18A", 127.0, 66.04)
+    s.wire((127.0, yr), kt)
+    s.junction((127.0, yr))
+    gnd_below(s, at_)
+    s.junction((139.7, yr))
+    s.wire((139.7, yr), (139.7, 48.26), (147.32, 48.26))
+    s.glabel("VIN_SENSE", (147.32, 48.26))
+    s.text("to the mute circuit:\nadapter present", (147.32, 43.18))
+    xe = 223.52
+    s.wire(d13.pin(1), (170.18, yr), (185.42, yr), (198.12, yr), (xe, yr))
+    cp, cn = vert(s, C470U, "C53", "470u 25V", 170.18, 66.04)
+    s.wire((170.18, yr), cp)
+    s.junction((170.18, yr))
+    gnd_below(s, cn)
+    c54 = s.add(C22U, "C54", "22u 25V", (185.42, 71.12), rot=90)
+    s.wire((185.42, yr), c54.top)
+    s.junction((185.42, yr))
+    gnd_below(s, c54.bottom)
+    s.junction((198.12, yr))
+    s.wire((198.12, yr), (198.12, 48.26), (205.74, 48.26))
+    s.glabel("VIN_DC", (205.74, 48.26))
+    s.text("to the +/-15 V module", (205.74, 43.18))
+    # --- 5 V module ---
+    ps = s.add(K7805, "PS1", "K7805-2000R3", (226.06, 50.8), ref_at=(241.3, 46.99), val_at=(241.3, 49.53))
+    v1, v2, v3 = ps.pin(1), ps.pin(2), ps.pin(3)
+    assert v1 == (xe, 55.88) and v3 == (228.6, 55.88), (v1, v2, v3)
+    s.wire(v1, (xe, yr))
+    s.wire(v2, (v2[0], 83.82))
+    s.power("GND", (v2[0], 83.82))
+    y5 = 68.58
+    s.wire(v3, (v3[0], y5), (243.84, y5), (259.08, y5), (269.24, y5), (269.24, y5 - 5.08))
+    s.power("+5V", (269.24, y5 - 5.08))
+    c55 = s.add(C22U, "C55", "22u 25V", (243.84, y5 + 7.62), rot=90)
+    s.wire((243.84, y5), c55.top)
+    s.junction((243.84, y5))
+    gnd_below(s, c55.bottom)
+    s.power("PWR_FLAG", (259.08, y5))
+    s.junction((259.08, y5))
+    s.text("5 V, 2 A switching regulator module (through-hole, hand-soldered).\n"
+           "Feeds the relay coils, the Daisy Seed (VIN) and the 3.3 V regulator.", (218.44, 96.52))
+
+    net("jack_centre", "J9.1", "F1")
+    net("ac1", "F1", "D9.2", "D11.1")
+    net("ac2", "J9.2", "D10.2", "D12.1")
+    net("VIN_SENSE", "D9.1", "D10.1", "D14.1", "D13.2")
+    net("GND", "D11.2", "D12.2", "D14.2", "C53.2", "C54", "C55", "PS1.2")
+    net("VIN_DC", "D13.1", "C53.1", "C54", "PS1.1")
+    net("+5V", "PS1.3", "C55")
+
 
 def opamp_power(s, ref, value, fields, at, cpos, cneg, lib=NE5532):
     x, y = at
@@ -837,7 +945,9 @@ def build():
             ("Volume pots, line buffers, HP amp", "output-pots.kicad_sch", (177.8, 76.2), "7", 500, output_pots,
              "Volume pots, line buffers, headphone amplifier"),
             ("Output mute and jacks", "output-jacks.kicad_sch", (25.4, 114.3), "8", 600, output_jacks,
-             "Output mute relays and jacks")):
+             "Output mute relays and jacks"),
+            ("Power input and 5 V", "power-input.kicad_sch", (101.6, 114.3), "9", 700, power_input,
+             "Power input and 5 V")):
         su = root.subsheet(name, fname, pos, (50.8, 25.4), page)
         sh = Sheet(libs, PROJECT, root_path + "/" + su, paper="A3", title="Plug & Roll - Main board - " + title,
                    rev="0.1", file_uuid=uid("file", fname), pwr_base=base)

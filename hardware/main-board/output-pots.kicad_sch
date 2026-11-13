@@ -63,7 +63,7 @@
 					)
 				)
 			)
-			(property "Description" "100Ω (1000) ±1%"
+			(property "Description" "100 (1000) 1%"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -74,7 +74,7 @@
 					)
 				)
 			)
-			(property "Manufacturer" "UNI-ROYAL(厚声)"
+			(property "Manufacturer" "UNI-ROYAL"
 				(at 0 -12.7 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -1185,7 +1185,7 @@
 					)
 				)
 			)
-			(property "Description" "100KΩ (1003) ±1%"
+			(property "Description" "100K (1003) 1%"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -1196,7 +1196,7 @@
 					)
 				)
 			)
-			(property "Manufacturer" "UNI-ROYAL(厚声)"
+			(property "Manufacturer" "UNI-ROYAL"
 				(at 0 -12.7 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -1356,7 +1356,7 @@
 					)
 				)
 			)
-			(property "Description" "100pF (101) ±5% 50V"
+			(property "Description" "100pF (101) 5% 50V"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -1367,7 +1367,7 @@
 					)
 				)
 			)
-			(property "Manufacturer" "SAMSUNG(三星)"
+			(property "Manufacturer" "SAMSUNG"
 				(at 0 -12.7 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -1564,7 +1564,7 @@
 					)
 				)
 			)
-			(property "Description" "10uF (106) ±10% 50V"
+			(property "Description" "10uF (106) 10% 50V"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -1575,7 +1575,7 @@
 					)
 				)
 			)
-			(property "Manufacturer" "SAMSUNG(三星)"
+			(property "Manufacturer" "SAMSUNG"
 				(at 0 -12.7 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -1772,7 +1772,7 @@
 					)
 				)
 			)
-			(property "Description" "4.7Ω (4R70) ±1%"
+			(property "Description" "4.7 (4R70) 1%"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -1783,7 +1783,7 @@
 					)
 				)
 			)
-			(property "Manufacturer" "UNI-ROYAL(厚声)"
+			(property "Manufacturer" "UNI-ROYAL"
 				(at 0 -12.7 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -1943,7 +1943,7 @@
 					)
 				)
 			)
-			(property "Description" "100nF (104) ±10% 50V"
+			(property "Description" "100nF (104) 10% 50V"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -1954,7 +1954,7 @@
 					)
 				)
 			)
-			(property "Manufacturer" "YAGEO(国巨)"
+			(property "Manufacturer" "YAGEO"
 				(at 0 -12.7 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -3955,7 +3955,7 @@
 				)
 			)
 		)
-		(property "Description" "100Ω (1000) ±1%"
+		(property "Description" "100 (1000) 1%"
 			(at 68.58 58.42 0)
 			(hide yes)
 			(effects
@@ -3964,7 +3964,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "UNI-ROYAL(厚声)"
+		(property "Manufacturer" "UNI-ROYAL"
 			(at 68.58 58.42 0)
 			(hide yes)
 			(effects
@@ -4058,7 +4058,7 @@
 				)
 			)
 		)
-		(property "Description" "100Ω (1000) ±1%"
+		(property "Description" "100 (1000) 1%"
 			(at 68.58 71.12 0)
 			(hide yes)
 			(effects
@@ -4067,7 +4067,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "UNI-ROYAL(厚声)"
+		(property "Manufacturer" "UNI-ROYAL"
 			(at 68.58 71.12 0)
 			(hide yes)
 			(effects
@@ -4161,7 +4161,7 @@
 				)
 			)
 		)
-		(property "Description" "100Ω (1000) ±1%"
+		(property "Description" "100 (1000) 1%"
 			(at 68.58 88.9 0)
 			(hide yes)
 			(effects
@@ -4170,7 +4170,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "UNI-ROYAL(厚声)"
+		(property "Manufacturer" "UNI-ROYAL"
 			(at 68.58 88.9 0)
 			(hide yes)
 			(effects
@@ -4264,7 +4264,7 @@
 				)
 			)
 		)
-		(property "Description" "100Ω (1000) ±1%"
+		(property "Description" "100 (1000) 1%"
 			(at 68.58 101.6 0)
 			(hide yes)
 			(effects
@@ -4273,7 +4273,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "UNI-ROYAL(厚声)"
+		(property "Manufacturer" "UNI-ROYAL"
 			(at 68.58 101.6 0)
 			(hide yes)
 			(effects
@@ -4665,7 +4665,7 @@
 				)
 			)
 		)
-		(property "Description" "100KΩ (1003) ±1%"
+		(property "Description" "100K (1003) 1%"
 			(at 167.64 66.04 0)
 			(hide yes)
 			(effects
@@ -4674,7 +4674,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "UNI-ROYAL(厚声)"
+		(property "Manufacturer" "UNI-ROYAL"
 			(at 167.64 66.04 0)
 			(hide yes)
 			(effects
@@ -4833,7 +4833,7 @@
 				)
 			)
 		)
-		(property "Description" "100pF (101) ±5% 50V"
+		(property "Description" "100pF (101) 5% 50V"
 			(at 182.88 66.04 0)
 			(hide yes)
 			(effects
@@ -4842,7 +4842,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "SAMSUNG(三星)"
+		(property "Manufacturer" "SAMSUNG"
 			(at 182.88 66.04 0)
 			(hide yes)
 			(effects
@@ -5001,7 +5001,7 @@
 				)
 			)
 		)
-		(property "Description" "100Ω (1000) ±1%"
+		(property "Description" "100 (1000) 1%"
 			(at 236.22 60.96 0)
 			(hide yes)
 			(effects
@@ -5010,7 +5010,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "UNI-ROYAL(厚声)"
+		(property "Manufacturer" "UNI-ROYAL"
 			(at 236.22 60.96 0)
 			(hide yes)
 			(effects
@@ -5104,7 +5104,7 @@
 				)
 			)
 		)
-		(property "Description" "10uF (106) ±10% 50V"
+		(property "Description" "10uF (106) 10% 50V"
 			(at 254 60.96 0)
 			(hide yes)
 			(effects
@@ -5113,7 +5113,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "SAMSUNG(三星)"
+		(property "Manufacturer" "SAMSUNG"
 			(at 254 60.96 0)
 			(hide yes)
 			(effects
@@ -5207,7 +5207,7 @@
 				)
 			)
 		)
-		(property "Description" "100KΩ (1003) ±1%"
+		(property "Description" "100K (1003) 1%"
 			(at 269.24 68.58 0)
 			(hide yes)
 			(effects
@@ -5216,7 +5216,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "UNI-ROYAL(厚声)"
+		(property "Manufacturer" "UNI-ROYAL"
 			(at 269.24 68.58 0)
 			(hide yes)
 			(effects
@@ -5472,7 +5472,7 @@
 				)
 			)
 		)
-		(property "Description" "100KΩ (1003) ±1%"
+		(property "Description" "100K (1003) 1%"
 			(at 167.64 104.14 0)
 			(hide yes)
 			(effects
@@ -5481,7 +5481,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "UNI-ROYAL(厚声)"
+		(property "Manufacturer" "UNI-ROYAL"
 			(at 167.64 104.14 0)
 			(hide yes)
 			(effects
@@ -5640,7 +5640,7 @@
 				)
 			)
 		)
-		(property "Description" "100pF (101) ±5% 50V"
+		(property "Description" "100pF (101) 5% 50V"
 			(at 182.88 104.14 0)
 			(hide yes)
 			(effects
@@ -5649,7 +5649,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "SAMSUNG(三星)"
+		(property "Manufacturer" "SAMSUNG"
 			(at 182.88 104.14 0)
 			(hide yes)
 			(effects
@@ -5808,7 +5808,7 @@
 				)
 			)
 		)
-		(property "Description" "100Ω (1000) ±1%"
+		(property "Description" "100 (1000) 1%"
 			(at 236.22 99.06 0)
 			(hide yes)
 			(effects
@@ -5817,7 +5817,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "UNI-ROYAL(厚声)"
+		(property "Manufacturer" "UNI-ROYAL"
 			(at 236.22 99.06 0)
 			(hide yes)
 			(effects
@@ -5911,7 +5911,7 @@
 				)
 			)
 		)
-		(property "Description" "10uF (106) ±10% 50V"
+		(property "Description" "10uF (106) 10% 50V"
 			(at 254 99.06 0)
 			(hide yes)
 			(effects
@@ -5920,7 +5920,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "SAMSUNG(三星)"
+		(property "Manufacturer" "SAMSUNG"
 			(at 254 99.06 0)
 			(hide yes)
 			(effects
@@ -6014,7 +6014,7 @@
 				)
 			)
 		)
-		(property "Description" "100KΩ (1003) ±1%"
+		(property "Description" "100K (1003) 1%"
 			(at 269.24 106.68 0)
 			(hide yes)
 			(effects
@@ -6023,7 +6023,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "UNI-ROYAL(厚声)"
+		(property "Manufacturer" "UNI-ROYAL"
 			(at 269.24 106.68 0)
 			(hide yes)
 			(effects
@@ -6279,7 +6279,7 @@
 				)
 			)
 		)
-		(property "Description" "100KΩ (1003) ±1%"
+		(property "Description" "100K (1003) 1%"
 			(at 167.64 154.94 0)
 			(hide yes)
 			(effects
@@ -6288,7 +6288,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "UNI-ROYAL(厚声)"
+		(property "Manufacturer" "UNI-ROYAL"
 			(at 167.64 154.94 0)
 			(hide yes)
 			(effects
@@ -6447,7 +6447,7 @@
 				)
 			)
 		)
-		(property "Description" "100pF (101) ±5% 50V"
+		(property "Description" "100pF (101) 5% 50V"
 			(at 182.88 154.94 0)
 			(hide yes)
 			(effects
@@ -6456,7 +6456,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "SAMSUNG(三星)"
+		(property "Manufacturer" "SAMSUNG"
 			(at 182.88 154.94 0)
 			(hide yes)
 			(effects
@@ -6615,7 +6615,7 @@
 				)
 			)
 		)
-		(property "Description" "4.7Ω (4R70) ±1%"
+		(property "Description" "4.7 (4R70) 1%"
 			(at 236.22 149.86 0)
 			(hide yes)
 			(effects
@@ -6624,7 +6624,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "UNI-ROYAL(厚声)"
+		(property "Manufacturer" "UNI-ROYAL"
 			(at 236.22 149.86 0)
 			(hide yes)
 			(effects
@@ -6815,7 +6815,7 @@
 				)
 			)
 		)
-		(property "Description" "100KΩ (1003) ±1%"
+		(property "Description" "100K (1003) 1%"
 			(at 167.64 193.04 0)
 			(hide yes)
 			(effects
@@ -6824,7 +6824,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "UNI-ROYAL(厚声)"
+		(property "Manufacturer" "UNI-ROYAL"
 			(at 167.64 193.04 0)
 			(hide yes)
 			(effects
@@ -6983,7 +6983,7 @@
 				)
 			)
 		)
-		(property "Description" "100pF (101) ±5% 50V"
+		(property "Description" "100pF (101) 5% 50V"
 			(at 182.88 193.04 0)
 			(hide yes)
 			(effects
@@ -6992,7 +6992,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "SAMSUNG(三星)"
+		(property "Manufacturer" "SAMSUNG"
 			(at 182.88 193.04 0)
 			(hide yes)
 			(effects
@@ -7151,7 +7151,7 @@
 				)
 			)
 		)
-		(property "Description" "4.7Ω (4R70) ±1%"
+		(property "Description" "4.7 (4R70) 1%"
 			(at 236.22 187.96 0)
 			(hide yes)
 			(effects
@@ -7160,7 +7160,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "UNI-ROYAL(厚声)"
+		(property "Manufacturer" "UNI-ROYAL"
 			(at 236.22 187.96 0)
 			(hide yes)
 			(effects
@@ -7348,7 +7348,7 @@
 				)
 			)
 		)
-		(property "Description" "100nF (104) ±10% 50V"
+		(property "Description" "100nF (104) 10% 50V"
 			(at 340.36 63.5 0)
 			(hide yes)
 			(effects
@@ -7357,7 +7357,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "YAGEO(国巨)"
+		(property "Manufacturer" "YAGEO"
 			(at 340.36 63.5 0)
 			(hide yes)
 			(effects
@@ -7451,7 +7451,7 @@
 				)
 			)
 		)
-		(property "Description" "100nF (104) ±10% 50V"
+		(property "Description" "100nF (104) 10% 50V"
 			(at 340.36 73.66 0)
 			(hide yes)
 			(effects
@@ -7460,7 +7460,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "YAGEO(国巨)"
+		(property "Manufacturer" "YAGEO"
 			(at 340.36 73.66 0)
 			(hide yes)
 			(effects
@@ -7843,7 +7843,7 @@
 				)
 			)
 		)
-		(property "Description" "100nF (104) ±10% 50V"
+		(property "Description" "100nF (104) 10% 50V"
 			(at 340.36 152.4 0)
 			(hide yes)
 			(effects
@@ -7852,7 +7852,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "YAGEO(国巨)"
+		(property "Manufacturer" "YAGEO"
 			(at 340.36 152.4 0)
 			(hide yes)
 			(effects
@@ -7946,7 +7946,7 @@
 				)
 			)
 		)
-		(property "Description" "100nF (104) ±10% 50V"
+		(property "Description" "100nF (104) 10% 50V"
 			(at 340.36 162.56 0)
 			(hide yes)
 			(effects
@@ -7955,7 +7955,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "YAGEO(国巨)"
+		(property "Manufacturer" "YAGEO"
 			(at 340.36 162.56 0)
 			(hide yes)
 			(effects
