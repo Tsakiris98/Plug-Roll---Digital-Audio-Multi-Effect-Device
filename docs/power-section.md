@@ -1,7 +1,8 @@
 # Power Section — Design Note (v0.4, 2026-11-13)
 
 Status: **approved on 2026-11-13. Schematic: power input and 5 V drawn
-(`power-input.kicad_sch`); ±15 V module, regulators and mute circuit still to draw.**
+(`power-input.kicad_sch`), ±15 V module, filters and ±12 V regulators drawn
+(`power-analog.kicad_sch`); 3.3 V regulator and mute circuit still to draw.**
 Antonios's decisions: ready-made converter modules instead of converters
 built from parts, even from a lesser-known brand, and even if he has to buy
 and solder them himself; a supply that works comfortably, not at the limit;
@@ -180,7 +181,7 @@ rails from the converters.
 
 | Rail | Part | JLCPCB | Tolerance to confirm |
 |---|---|---|---|
-| +12 V | MC78M12CDTRKG, onsemi, TO-252 | C67851, Extended, 33,357 | onsemi MC78M00 datasheet **to read**: output inside 11.4–12.6 V, dropout (JLCPCB lists 2 V at 350 mA) |
+| +12 V | MC78M12CDTRKG, onsemi, TO-252 | C67851, Extended, 33,357 | 11.4 … 12.6 V for an input of 14.5 V or more, 5–350 mA; dropout 2.0 V typ (onsemi MC78M00/D rev. 29) |
 | −12 V | MC79M12BDTRKG, onsemi, TO-252 | C126400, Extended, 3,237 | −11.4 … −12.6 V over line, load and temperature; dropout 1.1 V (onsemi MC79M00/D) |
 | 3.3 V | AMS1117-3.3, SOT-223 | C6186, **Basic**, 1,455,161 | |
 

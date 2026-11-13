@@ -57,6 +57,10 @@ C470U = "JLCPCB:FZ470UF25V90RV0113"  # pin 1 = +
 C100U = "JLCPCB:JVE25V100M6X8"     # pin 1 = +
 C22U = "JLCPCB:CL31A226KAHNNNE"    # 22 uF 25 V X5R 1206
 K7805 = "JLCPCB:K7805-2000R3_C18212380"  # YLPTEC datasheet: 1 = +Vin, 2 = GND, 3 = +Vo
+VRA1215 = "JLCPCB:VRA1215YMD-6WR3"  # YLPTEC datasheet: 1 = -Vin, 2 = +Vin, 3 = +Vo1, 4 = COM, 5 = -Vo2
+L2U2 = "JLCPCB:SMNR4020-2.2UH"     # 2.2 uH 3.4 A, C135262
+REG_P12 = "JLCPCB:MC78M12CDTRKG"   # onsemi MC78M00/D: 1 = input, tab (4) = ground, 3 = output
+REG_N12 = "JLCPCB:MC79M12BDTRKG"   # onsemi MC79M00/D: 1 = ground, tab (2) = input, 3 = output
 NMOS = "Transistor_FET:AO3400A"    # pin 1 = gate, 2 = source, 3 = drain
 NMOS_FIELDS = {"Footprint": "JLCPCB:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR", "LCSC": "C20917",
                "MPN": "AO3400A", "Manufacturer": "AOS"}
@@ -872,6 +876,101 @@ def power_input(s):
     net("VIN_DC", "D13.1", "C53.1", "C54", "PS1.1")
     net("+5V", "PS1.3", "C55")
 
+def hang(s, lib, ref, value, x, y_rail, up=False, rot=90, gnd="GNDA", dx=6.35):
+    """Two-pin part from a horizontal rail to ground: below the rail, or above it (up=True,
+    ground symbol drawn pointing up). rot=270 puts pin 1 on top (polarised parts, diodes)."""
+    yc = y_rail - 7.62 if up else y_rail + 7.62
+    part = s.add(lib, ref, value, (x, yc), rot=rot, ref_at=(x + dx, yc - 1.27), val_at=(x + dx, yc + 1.27))
+    top, bot = part.top, part.bottom
+    s.junction((x, y_rail))
+    if up:
+        s.wire(bot, (x, y_rail))
+        s.wire(top, (x, top[1] - 2.54))
+        s.power(gnd, (x, top[1] - 2.54), rot=180)
+    else:
+        s.wire((x, y_rail), top)
+        s.wire(bot, (x, bot[1] + 2.54))
+        s.power(gnd, (x, bot[1] + 2.54))
+    return part
+
+
+def power_analog(s):
+    s.text("ANALOG SUPPLY: +/-15 V MODULE, FILTERS, +/-12 V REGULATORS", (25.4, 20.32), 2.0)
+    s.text("PS2 is an isolated converter: its output side has its own ground, which becomes the analog ground GNDA of the board.\n"
+           "Each output passes a filter (100 uF, 2.2 uH, 100 uF) and a fixed regulator. The op-amp rails must stay inside 11.4 ... 12.6 V.\n"
+           "At most 220 uF may hang on each module output (YLPTEC datasheet): 2 x 100 uF here.", (25.4, 27.94))
+    yP, yC, yN = 55.88, 106.68, 157.48
+    ps = s.add(VRA1215, "PS2", "VRA1215YMD-6WR3", (60.96, 104.14), mirror="y", ref_at=(48.26, 115.57), val_at=(48.26, 118.11))
+    nvin, pvin, pvo, com, nvo = (ps.pin(k) for k in (1, 2, 3, 4, 5))
+    assert pvin == (67.31, 101.6) and com == (67.31, yC) and nvo == (67.31, 109.22), (nvin, pvin, pvo, com, nvo)
+    # input side
+    yi = 71.12
+    s.glabel("VIN_DC", (38.1, yi), 180)
+    s.wire((38.1, yi), (50.8, yi), (72.39, yi), (72.39, pvin[1]), pvin)
+    c56 = s.add(C22U, "C56", "22u 25V", (50.8, 76.2), rot=90, ref_at=(43.18, 74.93), val_at=(43.18, 77.47))
+    s.junction((50.8, yi))
+    s.wire((50.8, yi), c56.top)
+    s.wire(c56.bottom, (50.8, 81.28))
+    s.wire(nvin, (69.85, nvin[1]), (69.85, 81.28), (50.8, 81.28))
+    s.junction((50.8, 81.28))
+    gnd_below(s, (50.8, 81.28))
+    # output common = analog ground
+    s.wire(com, (86.36, yC))
+    gnd_below(s, (86.36, yC), "GNDA")
+    s.power("PWR_FLAG", (81.28, yC))
+    s.junction((81.28, yC))
+    xe = 231.14
+    # positive rail
+    l1 = s.add(L2U2, "L1", "2u2", (106.68, yP))
+    u8 = s.add(REG_P12, "U8", "MC78M12", (157.48, yP + 3.81), ref_at=(157.48, yP - 7.62), val_at=(157.48, yP - 5.08))
+    assert u8.pin(1) == (144.78, yP) and u8.pin(3) == (170.18, yP), (u8.pin(1), u8.pin(3), u8.pin(4))
+    s.wire(pvo, (77.47, pvo[1]), (77.47, yP), l1.left)
+    s.wire(l1.right, u8.pin(1))
+    s.wire(u8.pin(3), (xe, yP), (xe, yP - 5.08))
+    s.power("+12V", (xe, yP - 5.08))
+    gnd_below(s, u8.pin(4), "GNDA")
+    hang(s, C100U, "C57", "100u 25V", 91.44, yP, rot=270)
+    hang(s, C100U, "C58", "100u 25V", 121.92, yP, rot=270)
+    hang(s, C100N, "C59", "100n", 134.62, yP)
+    hang(s, C10U, "C60", "10u 50V", 182.88, yP)
+    hang(s, C100N, "C61", "100n", 195.58, yP)
+    hang(s, SS34, "D15", "SS34", 208.28, yP, rot=270)
+    s.power("PWR_FLAG", (220.98, yP))
+    s.junction((220.98, yP))
+    # negative rail
+    l2 = s.add(L2U2, "L2", "2u2", (106.68, yN))
+    u9 = s.add(REG_N12, "U9", "MC79M12", (157.48, yN + 3.81), ref_at=(157.48, yN - 7.62), val_at=(157.48, yN - 5.08))
+    assert u9.pin(2) == (144.78, yN) and u9.pin(3) == (170.18, yN), (u9.pin(1), u9.pin(2), u9.pin(3))
+    s.wire(nvo, (77.47, nvo[1]), (77.47, yN), l2.left)
+    s.wire(l2.right, u9.pin(2))
+    s.wire(u9.pin(3), (xe, yN), (xe, yN + 5.08))
+    s.power("-12V", (xe, yN + 5.08), rot=180)
+    gnd_below(s, u9.pin(1), "GNDA")
+    hang(s, C100U, "C62", "100u 25V", 91.44, yN, up=True, rot=270)
+    hang(s, C100U, "C63", "100u 25V", 121.92, yN, up=True, rot=270)
+    hang(s, C100N, "C64", "100n", 134.62, yN, up=True)
+    hang(s, C10U, "C65", "10u 50V", 182.88, yN, up=True)
+    hang(s, C100N, "C66", "100n", 195.58, yN, up=True)
+    hang(s, SS34, "D16", "SS34", 208.28, yN, up=True, rot=270)
+    s.power("PWR_FLAG", (220.98, yN))
+    s.junction((220.98, yN))
+    s.text("+15 V (14.5 V at worst)", (80.01, yP - 5.08))
+    s.text("-15 V (13.7 V at worst)", (80.01, yN + 7.62))
+    s.text("D15, D16: normally do nothing. They stop one rail being pulled past ground\n"
+           "through the op-amps while the other rail is still rising at power-up.", (190.5, 96.52))
+    s.text("Electrolytics on the negative rail have their + terminal on GNDA.", (86.36, yN + 25.4))
+
+    net("VIN_DC", "PS2.2", "C56")
+    net("GND", "PS2.1", "C56")
+    net("p15_raw", "PS2.3", "C57.1", "L1")
+    net("p15_filt", "L1", "C58.1", "C59", "U8.1")
+    net("+12V", "U8.3", "C60", "C61", "D15.1")
+    net("GNDA", "PS2.4", "C57.2", "C58.2", "C59", "U8.4", "C60", "C61", "D15.2",
+        "C62.1", "C63.1", "C64", "U9.1", "C65", "C66", "D16.1")
+    net("n15_raw", "PS2.5", "C62.2", "L2")
+    net("n15_filt", "L2", "C63.2", "C64", "U9.2")
+    net("-12V", "U9.3", "C65", "C66", "D16.2")
+
 
 def opamp_power(s, ref, value, fields, at, cpos, cneg, lib=NE5532):
     x, y = at
@@ -947,7 +1046,9 @@ def build():
             ("Output mute and jacks", "output-jacks.kicad_sch", (25.4, 114.3), "8", 600, output_jacks,
              "Output mute relays and jacks"),
             ("Power input and 5 V", "power-input.kicad_sch", (101.6, 114.3), "9", 700, power_input,
-             "Power input and 5 V")):
+             "Power input and 5 V"),
+            ("Analog supply", "power-analog.kicad_sch", (177.8, 114.3), "10", 800, power_analog,
+             "Analog supply +/-12 V")):
         su = root.subsheet(name, fname, pos, (50.8, 25.4), page)
         sh = Sheet(libs, PROJECT, root_path + "/" + su, paper="A3", title="Plug & Roll - Main board - " + title,
                    rev="0.1", file_uuid=uid("file", fname), pwr_base=base)

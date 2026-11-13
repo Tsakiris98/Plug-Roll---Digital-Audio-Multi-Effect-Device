@@ -350,6 +350,47 @@
 			)
 		)
 	)
+	(sheet
+		(at 177.8 114.3)
+		(size 50.8 25.4)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "92d48c7e-a021-5ae1-a94b-ea5ccaee7f40")
+		(property "Sheetname" "Analog supply"
+			(at 177.8 113.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "power-analog.kicad_sch"
+			(at 177.8 140.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "main-board"
+				(path "/2cce0cd6-b775-4f9e-a478-0bfadfac04cb"
+					(page "10")
+				)
+			)
+		)
+	)
 	(sheet_instances
 		(path "/"
 			(page "1")

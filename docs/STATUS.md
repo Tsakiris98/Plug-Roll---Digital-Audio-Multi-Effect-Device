@@ -9,9 +9,10 @@ Last update: **2026-11-13**.
 
 Everything up to and including the output section is drawn, verified,
 committed and pushed. Power section: design note `power-section.md` v0.4,
-all parts selected and in the JLCPCB library, **step B drawn** (power input
-and 5 V, sheet `power-input.kicad_sch`, page 9). Nothing is half-done. The
-next action is "Next steps" item 2, step C.
+all parts selected and in the JLCPCB library, **steps B and C drawn** (power
+input and 5 V on page 9; ±15 V module, filters and ±12 V regulators on
+page 10). Nothing is half-done. The next action is "Next steps" item 2,
+step D.
 
 Antonios works inside a 5-hour usage limit: work in small steps, commit after
 each one, and stop with this file updated before the limit is close.
@@ -35,16 +36,16 @@ Phase 1, main board, schematic in progress. Requirements are at **v0.7**.
 | Volume pot header, line buffers, headphone amplifier | same | drawn | `output-pots.kicad_sch` (7) |
 | Mute relays, output and headphone jacks | same | drawn | `output-jacks.kicad_sch` (8) |
 | Power input, 5 V module | `power-section.md` v0.4 | drawn | `power-input.kicad_sch` (9) |
-| ±15 V module, ±12 V and 3.3 V regulators, mute delay circuit | same | **not drawn** | |
+| ±15 V module, filters, ±12 V regulators | same | drawn | `power-analog.kicad_sch` (10) |
+| 3.3 V regulator, mute delay circuit | same | **not drawn** | |
 | Daisy Seed socket, ribbon connector to the control board | **no note yet** | not drawn | |
 
 State of the checks: `python3 tools/schgen/verify.py` reports "netlist matches
-the intended circuit". ERC gives 4 findings, all expected: 1 label with one
-end (`BYPASS_RELAY`, waits for the Daisy sheet) and 3 supply rails without a
-source (+12 V, −12 V, GNDA; they get one in step C). Signals still open
+the intended circuit". ERC gives 1 finding, expected: the label `BYPASS_RELAY` has one end (it waits
+for the Daisy sheet). All supply rails now have a source. Signals still open
 towards blocks that are not drawn: `INST_SW` (toggle, general ribbon),
-`MUTE_SW` and `VIN_SENSE` (mute circuit), `VIN_DC` (±15 V module),
-`ADC_IN_L/R`, `DAC_OUT_L/R`, `BYPASS_RELAY` (Daisy socket).
+`MUTE_SW` and `VIN_SENSE` (mute circuit), `ADC_IN_L/R`, `DAC_OUT_L/R`,
+`BYPASS_RELAY` (Daisy socket).
 
 ## How the schematic is made
 
@@ -86,11 +87,12 @@ towards blocks that are not drawn: `INST_SW` (toggle, general ribbon),
      D9–D12, TVS D14, `VIN_SENSE` node, series diode D13, 470 µF bulk C53,
      K7805-2000R3 (PS1) with 22 µF ceramics, +5 V and GND with PWR_FLAGs.
      `VIN_DC` goes to the ±15 V module.
-   - C. ±15 V module with its capacitors, 2.2 µH + 100 µF filters, MC78M12 and
-     MC79M12, ±12 V and GNDA with PWR_FLAGs. Read first: onsemi MC78M00
-     datasheet (tolerance, dropout, capacitors); regulator pin-outs against
-     the library symbols (78M12: 1 IN, 3 OUT, tab GND; 79M12: 1 GND, 2 IN,
-     3 OUT).
+   - C. *(done 2026-11-13)* `power-analog.kicad_sch`: VRA1215YMD-6WR3 (PS2),
+     100 µF + 2.2 µH + 100 µF filters, MC78M12 (U8) and MC79M12 (U9) with
+     10 µF + 100 nF outputs, reverse diodes D15/D16, PWR_FLAGs on +12 V,
+     −12 V and GNDA. The module's output common is GNDA. The 78M12 datasheet
+     (onsemi MC78M00/D rev. 29) confirms 11.4–12.6 V for inputs of 14.5 V or
+     more and 2.0 V typical dropout.
    - D. AMS1117-3.3 and the 3.3 V output for the control board.
    - E. Mute circuit driving `MUTE_SW`: choose comparator or supervisor and
      the coil Zener at JLCPCB, explain the circuit to Antonios before
@@ -103,10 +105,11 @@ towards blocks that are not drawn: `INST_SW` (toggle, general ribbon),
 
 ## Open checks carried forward
 
-- DC jack DC-005C-20A (C84007): pins assigned from the footprint geometry and
-  the symbol drawing (1 = centre pin at the rear, 2 = sleeve, 3 = side switch
-  contact, left unconnected). The datasheet could not be downloaded; confirm
-  on it before the PCB. A wrong assignment gives no power, not damage.
+- *(closed)* DC jack pin-out confirmed on the HRO drawing in
+  `docs/datasheet/C84007.pdf`: 1 = centre pin, 2 = sleeve spring, 3 = switch
+  contact.
+- GNDA (isolated module output) and GND are not yet joined anywhere; they
+  are joined at the Daisy Seed when its sheet is drawn.
 - Pad numbering of the 2×8 header footprint against the IDC pin order (odd/even rows) before the PCB.
 - NMJ6HCD2 footprint orientation against the Neutrik drawing (which row faces
   the panel) before the PCB.
