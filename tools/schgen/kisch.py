@@ -256,7 +256,11 @@ class Sheet:
         out.append(self._prop("Reference", i.ref, i.ref_at, ang, power))
         if power:
             below = i.value.startswith("GND") or i.rot == 180
-            out.append(self._prop("Value", i.value, (i.x, i.y + 5.08 if below else i.y - 3.81), 0, False))
+            if i.value.startswith("GND") and i.rot == 180:      # ground symbol drawn pointing up
+                vy = i.y - 6.35
+            else:
+                vy = i.y + 5.08 if below else i.y - 3.81
+            out.append(self._prop("Value", i.value, (i.x, vy), 0, False))
         else:
             out.append(self._prop("Value", i.value, i.val_at, ang, False))
         props = dict(s.props)

@@ -3,7 +3,7 @@
 Updated at the end of every working session. Read this first, then
 `docs/requirements.md`.
 
-Last update: **2026-11-12**.
+Last update: **2026-11-13**.
 
 ## Where we are
 
@@ -16,14 +16,17 @@ Phase 1, main board, schematic in progress. Requirements are at **v0.6**.
 | INST buffer | same | drawn | `input-inst.kicad_sch` (4) |
 | Gain stages, ADC pad | same | drawn | `input-gain.kicad_sch` (5) |
 | DAC gain, bypass relay | `output-section.md` v0.1, approved | drawn | `output-dac.kicad_sch` (6) |
-| Volume pot connector, line outputs, headphone amplifier, mute relays | same | **not drawn** | |
+| Volume pot header, line buffers, headphone amplifier | same | drawn | `output-pots.kicad_sch` (7) |
+| Mute relays, output and headphone jacks | same | drawn | `output-jacks.kicad_sch` (8) |
 | Power supply, power-on mute delay circuit | **no note yet** | not drawn | |
 | Daisy Seed socket, ribbon connector to the control board | **no note yet** | not drawn | |
 
 State of the checks: `python3 tools/schgen/verify.py` reports "netlist matches
-the intended circuit". ERC gives 8 findings, all expected: 3 labels with one
-end (`BYPASS_RELAY`, `OUT_SEL_L`, `OUT_SEL_R`) and 5 supply rails without a
-source (+12 V, −12 V, +5 V, GNDA, GND).
+the intended circuit". ERC gives 6 findings, all expected: 1 label with one
+end (`BYPASS_RELAY`, waits for the Daisy sheet) and 5 supply rails without a
+source (+12 V, −12 V, +5 V, GNDA, GND). Signals still open towards blocks
+that are not drawn: `INST_SW` (toggle, general ribbon), `MUTE_SW` (power
+section), `ADC_IN_L/R`, `DAC_OUT_L/R`, `BYPASS_RELAY` (Daisy socket).
 
 ## How the schematic is made
 
@@ -54,16 +57,7 @@ source (+12 V, −12 V, +5 V, GNDA, GND).
 
 ## Next steps, in order
 
-1. **Second half of the output section** (sheet to add: line outputs and
-   headphones):
-   - add OPA1688IDR (C206212) to the JLCPCB library with `add_part.sh`;
-   - read from the TI datasheet (SBOS724A): absolute maximum ratings,
-     capacitive-load curves, and fix the output series resistor;
-   - choose a 2×8 header for the pot ribbon at JLCPCB (stock, Basic/Extended);
-   - draw: pot connector, line buffers (NE5532), impedance-balanced outputs
-     (100 Ω + 10 µF per leg), headphone amplifier, mute relays K4/K5 with
-     their coil line left as a label for the power section, three NMJ6HCD2
-     jacks.
+1. *(done 2026-11-13)* Second half of the output section.
 2. **Power section design note** (before any schematic): 9–15 V input of
    either polarity, protection, ±12 V within ±5 %, 5 V for the relays (about
    105 mA), 3.3 V for LEDs and logic, Seed supply, power-on/power-off mute
@@ -74,6 +68,7 @@ source (+12 V, −12 V, +5 V, GNDA, GND).
 
 ## Open checks carried forward
 
+- Pad numbering of the 2×8 header footprint against the IDC pin order (odd/even rows) before the PCB.
 - NMJ6HCD2 footprint orientation against the Neutrik drawing (which row faces
   the panel) before the PCB.
 - Everything marked *(measure)* in the two design notes (first-board

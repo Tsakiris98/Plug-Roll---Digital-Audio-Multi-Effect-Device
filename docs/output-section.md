@@ -1,9 +1,9 @@
 # Output Section — Design Note (v0.1, 2026-11-12)
 
 Status: **approved on 2026-11-12 (all items of section 9); requirements
-updated to v0.6.** Schematic drawn so far: DAC gain stage and bypass relay.
-Still to draw: volume pot connector, line outputs, headphone amplifier, mute
-relays. Every number marked *(measure)* is
+updated to v0.6.** The whole output section is in the schematic (sheets `output-dac`,
+`output-pots`, `output-jacks`). The circuit that switches the mute relays
+(`MUTE_SW`) is designed with the power supply. Every number marked *(measure)* is
 provisional until it is measured on the real board.
 
 Covers: DAC gain stage, global bypass relay, master volume and line outputs,
@@ -168,8 +168,13 @@ Into headphones or powered speakers that is a loud bang.
 
 **What it does.** Two relays (G6K-2F-Y-5V again) sit in series with the four
 outputs (K4: line L/R, K5: headphones L/R), directly before the jacks.
-Released = open = muted. So the outputs are disconnected whenever the device
-has no power, and stay disconnected until the relays are switched on.
+Released = muted: the amplifier is disconnected **and the jack contact is
+tied to ground** (changeover contact: moving contact = jack, rest contact =
+ground, working contact = amplifier). A grounded output is silent; an output
+left open would let the connected equipment hum. So the outputs are muted
+whenever the device has no power, and stay muted until the relays are
+switched on. The coils sit between +5 V and the line `MUTE_SW`, which the
+delay circuit pulls to ground.
 
 **Control: analog, no Daisy pin.** A small circuit switches the relays on
 about 1–2 s after the supply is present and switches them off quickly when
@@ -207,9 +212,20 @@ A normal audio op-amp (NE5532) has the voltage but not the current for 32 Ω.
 | Thermal resistance, SOIC-8 | 116 °C/W junction to ambient | SBOS724A, section 7.4 |
 
 - **Topology.** HP pot as a passive divider after the bypass relay, then the
-  OPA1688 as a follower (gain ×1), then a small series resistor (a few ohms,
-  for stability with the cable's capacitance; value fixed with the datasheet
-  curves), mute relay, jack.
+  OPA1688 as a follower (gain ×1), then **4.7 Ω in series** (Basic, C23164),
+  mute relay, jack.
+- **Why 4.7 Ω.** TI states that the OPA1688 needs no series resistor for
+  stability (SBOS724A, section 9.2.1.2: about 50° phase margin with 400 pF
+  directly at the output). The resistor is there for another reason: a TRS
+  plug shorts the contacts of the jack while it is pushed in, and the
+  datasheet allows a continuous short circuit only on one amplifier of the
+  package at a time (section 7.1, note 3). 4.7 Ω keeps the output impedance
+  low (about 5 Ω) and dissipates only 26 mW at the 75 mA current limit.
+- **Limits read from the datasheet:** supply ±20 V absolute maximum, junction
+  temperature 150 °C maximum (section 7.1). TI's own headphone example on
+  ±5 V reaches 50 mW into 32 Ω before clipping (Table 9-1); on our ±12 V the
+  current limit is the same, so expect a similar figure into 32 Ω and far
+  more voltage into 300 Ω.
 - **Why gain ×1 is enough.** The signal at the pot is already hot: nominal
   −18 dBFS is 0.83 Vrms, which is 21 mW into 32 Ω, loud. Full scale is
   6.6 Vrms.
@@ -304,11 +320,21 @@ the JLCPCB library are marked "in library".
 | Coil diodes | 1N4148W | SOD-123 | C81598 | Basic, in library | | 2 |
 | Output and headphone jacks | NMJ6HCD2, Neutrik (through-hole) | | C368502 | in library | 772 | 3 |
 | Resistors 100 Ω, 1 kΩ, 5.6 kΩ, 100 kΩ; capacitors 100 pF, 100 nF, 10 µF | as in the input section | 0603 / 1206 | | Basic, in library | | |
-| 2×8 header for the pot ribbon | to be selected if item 6 is approved | | | | | 1 |
+| Headphone output resistor 4.7 Ω 1 % | 0603WAF470KT5E | 0603 | C23164 | Basic | 859,921 | 2 |
+| 2×8 IDC box header for the pot ribbon (through-hole) | 321016SG0ABK00A01, JILN | 2.54 mm | C429960 | Extended | 11,151 | 1 |
 
 Alternative for the headphone amplifier: TPA6120A2DWPR, C70439, Extended,
 1,894 in stock. OPA1688ID (C544851, tube packaging) is out of stock; the reel
 version above is the one to use.
+
+**The pot ribbon header is through-hole, hand-soldered.** The only SMD 2×8
+IDC header found at JLCPCB (B-3000N16P-0110, C383608) has 113 pieces in
+stock, too few to rely on. A cable header is also pulled and pushed by hand,
+and through-hole pins hold much better than SMD pads. Pin use: odd pins =
+signals (1 M_TOP_L, 3 M_WIP_L, 5 M_TOP_R, 7 M_WIP_R, 9 HP_TOP_L, 11 HP_WIP_L,
+13 HP_TOP_R, 15 HP_WIP_R), even pins = analog ground. In a flat ribbon the
+wires follow the pin numbers, so every signal wire lies between two ground
+wires.
 
 The power-on delay circuit and its parts are chosen with the power supply.
 
@@ -331,6 +357,6 @@ bypass 21 mA, mute 42 mA = about 105 mA. This goes into the power budget.
 
 - Daisy Seed datasheet v1.0.5 (Electrosmith): pin table, Table 2, Fig. 1.7, schematic 4 of 4.
 - WM8731 / WM8731L datasheet (Wolfson, Production Data rev 3.4): "Line Output for DAC Playback Only".
-- OPA1688 datasheet, TI SBOS724A (June 2022): sections 6, 7.3, 7.4, 7.5, 8.3.3, read in TI's document viewer. Absolute maximum ratings and the capacitive-load curves still to be read before the schematic.
+- OPA1688 datasheet, TI SBOS724A (June 2022): sections 6, 7.3, 7.4, 7.5, 8.3.3, read in TI's document viewer. Read from the PDF as well: sections 7.1, 8.3.3 and 9.2.1 (Table 9-1).
 - Omron G6K datasheet (en-g6k.pdf): coil and contact data.
 - JLCPCB part pages of the LCSC numbers in section 10.

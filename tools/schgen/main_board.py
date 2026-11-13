@@ -40,6 +40,14 @@ R5K6 = "JLCPCB:0603WAF5601T5E"     # 5.6 k 1 %, C23189
 R100K = "JLCPCB:0603WAF1003T5E"    # 100 k 1 %, C25803
 C2N2 = "JLCPCB:0603CG222J500NT"    # 2.2 nF C0G 50 V, C2991172
 JACK35 = "JLCPCB:PJ-327A5JJ"       # 3.5 mm stereo, SMD: 1, 2 = sleeve, 3 = ring, 4 = tip, 5 = tip switch
+R4R7 = "JLCPCB:0603WAF470KT5E"     # 4.7 R 1 %, C23164
+HDR16 = "Connector_Generic:Conn_02x08_Odd_Even"
+HDR16_FIELDS = {"Footprint": "JLCPCB:IDC-TH_16P-P2.54-V-R2-C8-S2.54", "LCSC": "C429960",
+                "MPN": "321016SG0ABK00A01", "Manufacturer": "JILN"}
+# OPA1688 (TI SBOS724A, section 6): standard dual op-amp pinout, the same as the
+# NE5532, so the same triangle symbol is used with its own value and fields.
+OPA1688_FIELDS = {"Footprint": "JLCPCB:SOP-8_L4.9-W3.9-P1.27-LS6.0-BL", "LCSC": "C206212",
+                  "MPN": "OPA1688IDR", "Manufacturer": "Texas Instruments"}
 NMOS = "Transistor_FET:AO3400A"    # pin 1 = gate, 2 = source, 3 = drain
 NMOS_FIELDS = {"Footprint": "JLCPCB:SOT-23-3_L2.9-W1.3-P1.90-LS2.4-BR", "LCSC": "C20917",
                "MPN": "AO3400A", "Manufacturer": "AOS"}
@@ -217,6 +225,10 @@ def relay(s, ref, x, y, top, bottom):
             kind, name = spec
             e = (at[0], round(at[1] + dy, 2))
             s.wire(at, e)
+            if kind == "gnd":
+                s.power("GNDA", e, rot=180 if dy < 0 else 0)
+                net("GNDA", f"{ref}.{n}")
+                continue
             (s.glabel if kind == "global" else s.label)(name, e, rot)
             net(name, f"{ref}.{n}")
     return k.pin(1), k.pin(8)
@@ -571,6 +583,187 @@ def output_dac(s):
     net("q1_gate", "Q1.1", "R42", "R43")
     net("BYPASS_RELAY", "R42")
 
+def follower(s, ch, kind, x0, y, ref, unit, fields, value, r, c):
+    """Wiper label -> 100k + 100 pF to ground -> unity-gain follower. Returns the output point."""
+    wip = f"{kind}_WIP_{ch}"
+    s.label(wip, (x0, y), 180)
+    u = s.add(NE5532, ref, value, (x0 + 58.42, y + 2.54), unit=unit, fields=fields,
+              ref_at=(x0 + 66.04, y - 5.08), val_at=(x0 + 66.04, y - 2.54))
+    pin_minus, pin_plus, pin_out = (2, 3, 1) if unit == 1 else (6, 5, 7)
+    pm, pp, po = u.pin(pin_minus), u.pin(pin_plus), u.pin(pin_out)
+    assert pp == (round(x0 + 50.8, 2), round(y, 2)), pp
+    s.wire((x0, y), pp)
+    to_ground(s, R100K, f"R{r}", "100k", x0 + 15.24, y)
+    rf_cap(s, f"C{c}", x0 + 30.48, y)
+    xo = round(x0 + 71.12, 2)
+    s.wire(po, (xo, po[1]), (xo, y + 15.24), (x0 + 45.72, y + 15.24), (x0 + 45.72, pm[1]), pm)
+    s.junction((xo, po[1]))
+    net(wip, f"R{r}", f"C{c}", f"{ref}.{pin_plus}")
+    return (xo, po[1]), f"{ref}.{pin_minus}", f"{ref}.{pin_out}"
+
+
+def output_pots(s):
+    s.text("VOLUME POTS, LINE BUFFERS, HEADPHONE AMPLIFIER", (25.4, 20.32), 2.0)
+    s.text("Master and HP volume pots (10k dual, audio taper) are on the control board. One 16-wire ribbon connects them to J5:\n"
+           "odd pins = signals, even pins = analog ground, so every signal wire has a ground wire next to it.", (25.4, 27.94))
+    # --- sources to the tops of the pots ---
+    s.text("From the bypass relay to the tops of the pots", (25.4, 45.72), 1.5)
+    r = 44
+    for i, ch in enumerate("LR"):
+        y = 58.42 + 30.48 * i
+        s.glabel(f"OUT_SEL_{ch}", (45.72, y), 180)
+        s.wire((45.72, y), (55.88, y))
+        s.junction((55.88, y))
+        for k, kind in enumerate(("M", "HP")):
+            yy = round(y + 12.7 * k, 2)
+            rr = s.add(R100, f"R{r}", "100R", (68.58, yy))
+            s.wire((55.88, yy), rr.left)
+            s.wire(rr.right, (81.28, yy))
+            s.label(f"{kind}_TOP_{ch}", (81.28, yy))
+            net(f"OUT_SEL_{ch}", f"R{r}")
+            net(f"{kind}_TOP_{ch}", f"R{r}")
+            r += 1
+        s.wire((55.88, y), (55.88, y + 12.7))
+    # --- ribbon header ---
+    s.text("J5: ribbon to the master and HP pots", (25.4, 129.54), 1.5)
+    cx, cy = 68.58, 157.48
+    j = s.add(HDR16, "J5", "2x8 IDC 2.54", (cx, cy), fields=HDR16_FIELDS, ref_at=(cx + 1.27, cy - 12.7), val_at=(cx + 1.27, cy + 15.24))
+    names = ["M_TOP_L", "M_WIP_L", "M_TOP_R", "M_WIP_R", "HP_TOP_L", "HP_WIP_L", "HP_TOP_R", "HP_WIP_R"]
+    xb = cx + 15.24
+    for i, name in enumerate(names):
+        odd, even = j.pin(2 * i + 1), j.pin(2 * i + 2)
+        assert odd[1] == even[1] and odd[0] < even[0], (odd, even)
+        s.wire(odd, (odd[0] - 5.08, odd[1]))
+        s.label(name, (odd[0] - 5.08, odd[1]), 180)
+        s.wire(even, (xb, even[1]))
+        if i:
+            s.junction((xb, even[1]))
+        net(name, f"J5.{2 * i + 1}")
+        net("GNDA", f"J5.{2 * i + 2}")
+    top, bot = j.pin(2)[1], j.pin(16)[1]
+    s.wire((xb, top), (xb, bot + 5.08))
+    s.power("GNDA", (xb, bot + 5.08))
+    s.text("The bottom end of every pot section is tied to these\nground wires on the control board, and to nothing else there.", (25.4, 182.88))
+    # --- line buffers (NE5532) ---
+    x0 = 152.4
+    s.text("LINE BUFFERS (unity gain) after the master volume", (x0 - 20.32, 45.72), 1.5)
+    rr, cc = 48, 40
+    for i, ch in enumerate("LR"):
+        y = 58.42 + 38.1 * i
+        (xo, yo), pminus, pout = follower(s, ch, "M", x0, y, "U5", i + 1, NE5532_FIELDS, "NE5532", rr, cc)
+        ro = s.add(R100, f"R{rr + 1}", "100R", (xo + 12.7, yo))
+        co = s.add(C10U, f"C{cc + 1}", "10u 50V", (xo + 30.48, yo))
+        s.wire((xo, yo), ro.left)
+        s.wire(ro.right, co.left)
+        s.wire(co.right, (xo + 58.42, yo))
+        to_ground(s, R100K, f"R{rr + 2}", "100k", xo + 45.72, yo)
+        s.glabel(f"LINE_{ch}_SIG", (xo + 58.42, yo))
+        net(f"{ch}_linebuf", pminus, pout, f"R{rr + 1}")
+        net(f"{ch}_line_a", f"R{rr + 1}", f"C{cc + 1}")
+        net(f"LINE_{ch}_SIG", f"C{cc + 1}", f"R{rr + 2}")
+        rr += 3
+        cc += 2
+    # --- headphone amplifier (OPA1688) ---
+    s.text("HEADPHONE AMPLIFIER (OPA1688, unity gain) after the HP volume", (x0 - 20.32, 134.62), 1.5)
+    for i, ch in enumerate("LR"):
+        y = 147.32 + 38.1 * i
+        (xo, yo), pminus, pout = follower(s, ch, "HP", x0, y, "U6", i + 1, OPA1688_FIELDS, "OPA1688", rr, cc)
+        ro = s.add(R4R7, f"R{rr + 1}", "4R7", (xo + 12.7, yo))
+        s.wire((xo, yo), ro.left)
+        s.wire(ro.right, (xo + 27.94, yo))
+        s.glabel(f"HP_{ch}_SIG", (xo + 27.94, yo))
+        net(f"{ch}_hpamp", pminus, pout, f"R{rr + 1}")
+        net(f"HP_{ch}_SIG", f"R{rr + 1}")
+        rr += 2
+        cc += 1
+    s.text("4R7 in series: protects the amplifier while a plug is pushed in (it shorts the contacts on its way)\n"
+           "and keeps the cable capacitance away from the output. Output impedance about 5 ohm.", (x0 - 20.32, 215.9))
+    s.text("U5 supply and decoupling", (320.04, 45.72), 1.5)
+    opamp_power(s, "U5", "NE5532", NE5532_FIELDS, (327.66, 68.58), "C46", "C47")
+    s.text("U6 supply and decoupling", (320.04, 134.62), 1.5)
+    opamp_power(s, "U6", "OPA1688", OPA1688_FIELDS, (327.66, 157.48), "C48", "C49")
+
+
+def out_jack(s, ref, xj, yj, tip, ring, cold=None):
+    """NMJ6HCD2 used as an output. tip/ring = local label names (ring None = cold leg network)."""
+    j = s.add(JACK, ref, "NMJ6HCD2", (xj, yj), mirror="y", ref_at=(xj, yj - 8.89), val_at=(xj, yj - 6.35))
+    T, R, S, TN, RN, SN = (j.pin(k) for k in (1, 2, 3, 4, 5, 6))
+    for p_ in (TN, RN, SN):
+        s.no_connect(p_)
+    s.wire(T, (xj + 11.43, T[1]), (xj + 11.43, yj - 12.7), (xj + 25.4, yj - 12.7))
+    s.label(tip, (xj + 25.4, yj - 12.7))
+    net(tip, f"{ref}.1")
+    s.wire(S, (xj + 11.43, S[1]), (xj + 11.43, S[1] + 5.08))
+    s.power("GNDA", (xj + 11.43, S[1] + 5.08))
+    net("GNDA", f"{ref}.3")
+    if ring:
+        s.wire(R, (xj + 25.4, R[1]))
+        s.label(ring, (xj + 25.4, R[1]))
+        net(ring, f"{ref}.2")
+    else:
+        rref, cref = cold
+        rc = s.add(R100, rref, "100R", (xj + 24.13, yj))
+        cc = s.add(C10U, cref, "10u 50V", (xj + 41.91, yj))
+        s.wire(R, rc.left)
+        s.wire(rc.right, cc.left)
+        e = (xj + 54.61, yj)
+        s.wire(cc.right, e, (e[0], e[1] + 5.08))
+        s.power("GNDA", (e[0], e[1] + 5.08))
+        net(f"{ref}_cold", f"{ref}.2", rref)
+        net(f"{ref}_cold_b", rref, cref)
+        net("GNDA", cref)
+
+
+def output_jacks(s):
+    s.text("OUTPUT MUTE RELAYS AND JACKS", (25.4, 20.32), 2.0)
+    s.text("Relays drawn released (no coil current) = muted: every output contact of a jack is tied to ground, the amplifiers are disconnected.\n"
+           "MUTE_SW pulled to ground by the power-on delay circuit (power section) = coils on = outputs connected.", (25.4, 27.94))
+    yk = 78.74
+    p4, m4 = relay(s, "K4", 68.58, yk,
+                   top={2: ("gnd", ""), 4: ("global", "LINE_L_SIG"), 7: ("gnd", ""), 5: ("global", "LINE_R_SIG")},
+                   bottom={3: ("local", "JACK_LINE_L"), 6: ("local", "JACK_LINE_R")})
+    p5, m5 = relay(s, "K5", 149.86, yk,
+                   top={2: ("gnd", ""), 4: ("global", "HP_L_SIG"), 7: ("gnd", ""), 5: ("global", "HP_R_SIG")},
+                   bottom={3: ("local", "JACK_HP_L"), 6: ("local", "JACK_HP_R")})
+    s.text("K4: line outputs", (53.34, 45.72), 1.5)
+    s.text("K5: headphones", (134.62, 45.72), 1.5)
+    yr = 124.46
+    for p in (p4, p5):
+        s.wire(p, (p[0], p[1] - 5.08))
+        s.power("+5V", (p[0], p[1] - 5.08))
+    xe = 30.48
+    xd = round(m4[0] - 12.7, 2)
+    s.wire(m5, (m5[0], yr), (m4[0], yr), (xd, yr), (xe, yr))
+    s.wire(m4, (m4[0], yr))
+    s.junction((m4[0], yr))
+    s.junction((xd, yr))
+    s.glabel("MUTE_SW", (xe, yr), 180)
+    d = s.add(D4148, "D8", "1N4148W", (xd, yr - 10.16), rot=270, ref_at=(xd - 8.89, yr - 11.43), val_at=(xd - 8.89, yr - 8.89))
+    kk, aa = d.pin(1), d.pin(2)
+    assert kk[1] < aa[1], (kk, aa)
+    s.wire(aa, (xd, yr))
+    s.wire(kk, (kk[0], kk[1] - 2.54))
+    s.power("+5V", (kk[0], kk[1] - 2.54))
+    cd = s.add(C100N, "C50", "100n", (190.5, 78.74), rot=90)
+    t_, b_ = cd.top, cd.bottom
+    s.wire(t_, (t_[0], t_[1] - 2.54))
+    s.power("+5V", (t_[0], t_[1] - 2.54))
+    s.wire(b_, (b_[0], b_[1] + 2.54))
+    s.power("GND", (b_[0], b_[1] + 2.54))
+    s.text("5 V decoupling at K4 / K5", (205.74, 80.01))
+    # jacks
+    s.text("LINE OUT LEFT (impedance balanced)", (236.22, 45.72), 1.5)
+    out_jack(s, "J6", 251.46, 71.12, "JACK_LINE_L", None, cold=("R58", "C51"))
+    s.text("LINE OUT RIGHT (impedance balanced)", (236.22, 99.06), 1.5)
+    out_jack(s, "J7", 251.46, 124.46, "JACK_LINE_R", None, cold=("R59", "C52"))
+    s.text("HEADPHONES (tip = left, ring = right)", (236.22, 152.4), 1.5)
+    out_jack(s, "J8", 251.46, 177.8, "JACK_HP_L", "JACK_HP_R")
+    s.text("Line outputs: the ring carries no signal. It has the same 100R + 10u to ground as the tip has\n"
+           "to the amplifier, so a balanced input at the other end rejects hum picked up on the cable.", (236.22, 200.66))
+    net("+5V", "K4.1", "K5.1", "D8.1", "C50.2")
+    net("MUTE_SW", "K4.8", "K5.8", "D8.2")
+    net("GND", "C50.1")
+
 
 def opamp_power(s, ref, value, fields, at, cpos, cneg, lib=NE5532):
     x, y = at
@@ -639,6 +832,17 @@ def build():
                file_uuid=uid("file", "output-dac"), pwr_base=400)
     output_dac(od)
     (OUT / "output-dac.kicad_sch").write_text(od.render())
+
+    for name, fname, pos, page, base, fn, title in (
+            ("Volume pots, line buffers, HP amp", "output-pots.kicad_sch", (177.8, 76.2), "7", 500, output_pots,
+             "Volume pots, line buffers, headphone amplifier"),
+            ("Output mute and jacks", "output-jacks.kicad_sch", (25.4, 114.3), "8", 600, output_jacks,
+             "Output mute relays and jacks")):
+        su = root.subsheet(name, fname, pos, (50.8, 25.4), page)
+        sh = Sheet(libs, PROJECT, root_path + "/" + su, paper="A3", title="Plug & Roll - Main board - " + title,
+                   rev="0.1", file_uuid=uid("file", fname), pwr_base=base)
+        fn(sh)
+        (OUT / fname).write_text(sh.render())
 
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "main-board.kicad_sch").write_text(root.render(root_page="1"))
