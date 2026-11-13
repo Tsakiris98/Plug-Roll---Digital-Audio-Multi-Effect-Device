@@ -5,16 +5,21 @@ Updated at the end of every working session. Read this first, then
 
 Last update: **2026-11-13**.
 
-## Stopped here (2026-11-13, midday)
+## Stopped here (2026-11-13, afternoon)
 
 Everything up to and including the output section is drawn, verified,
-committed and pushed. The power section has an approved design note
-(`power-section.md` v0.3) and **no schematic yet**. Nothing is half-done:
-the next action is the first bullet of "Next steps" item 2 (read the 78M12
-datasheet, then select the remaining power parts at JLCPCB).
+committed and pushed. Power section: design note `power-section.md` v0.4,
+**all parts selected and in the JLCPCB library** (section 10 of the note),
+**no schematic yet**. Nothing is half-done. The next action is "Next steps"
+item 2, step B.
 
 Antonios works inside a 5-hour usage limit: work in small steps, commit after
 each one, and stop with this file updated before the limit is close.
+
+JLCPCB part search that works: open
+`https://jlcpcb.com/parts/componentSearch?searchTxt=<keyword>` in the browser
+pane, wait about 9 s, then read the table rows from the page. Calling the
+site's search API directly in a burst gets blocked (403).
 
 ## Where we are
 
@@ -29,7 +34,7 @@ Phase 1, main board, schematic in progress. Requirements are at **v0.7**.
 | DAC gain, bypass relay | `output-section.md` v0.1, approved | drawn | `output-dac.kicad_sch` (6) |
 | Volume pot header, line buffers, headphone amplifier | same | drawn | `output-pots.kicad_sch` (7) |
 | Mute relays, output and headphone jacks | same | drawn | `output-jacks.kicad_sch` (8) |
-| Power supply, power-on mute delay circuit | `power-section.md` v0.3, direction approved | **not drawn** | |
+| Power supply, power-on mute delay circuit | `power-section.md` v0.4, direction approved | **not drawn** | |
 | Daisy Seed socket, ribbon connector to the control board | **no note yet** | not drawn | |
 
 State of the checks: `python3 tools/schgen/verify.py` reports "netlist matches
@@ -71,20 +76,24 @@ section), `ADC_IN_L/R`, `DAC_OUT_L/R`, `BYPASS_RELAY` (Daisy socket).
 ## Next steps, in order
 
 1. *(done 2026-11-13)* Second half of the output section.
-2. **Power section schematic** (design note approved in direction,
-   `power-section.md` v0.3: 12 V / 2 A adapter, modules VRA1215YMD-6WR3 for
-   ±15 V and K7805-2000R3 for 5 V, linear regulators to ±12 V and 3.3 V).
-   Before drawing:
-   - *(done)* YLPTEC datasheets of both modules read; they are in
-     `docs/datasheet/` and summarised in `power-section.md` section 5.1;
-   - read the 78M12 datasheet; if its dropout leaves too little margin from
-     14.5 V, choose a low-dropout +12 V regulator; choose a second source for
-     the −12 V regulator (MC79M12CDTRKG is marked discontinued);
-   - select at JLCPCB: DC jack, PTC, TVS, series diode, LC filter parts
-     (at most 100 µF per module output), bulk capacitors, mute comparator;
-   - add the parts to the JLCPCB library;
-   - draw in steps: input protection and 5 V; ±15 V module, filters and
-     ±12 V regulators; 3.3 V; mute delay circuit driving `MUTE_SW`; PWR_FLAGs.
+2. **Power section schematic**, one small step at a time, each with netlist
+   verify, ERC, PDF and commit:
+   - A. *(done 2026-11-13)* parts selected, added to the library; module
+     pin-outs checked against the YLPTEC datasheets in `docs/datasheet/`.
+   - B. Input and 5 V: DC jack, PTC, TVS, bridge (4× SS34), "adapter present"
+     node, series SS34, 470 µF bulk, K7805-2000R3 with 22 µF ceramics, +5 V
+     and GND with PWR_FLAGs. Read first: nothing more needed.
+   - C. ±15 V module with its capacitors, 2.2 µH + 100 µF filters, MC78M12 and
+     MC79M12, ±12 V and GNDA with PWR_FLAGs. Read first: onsemi MC78M00
+     datasheet (tolerance, dropout, capacitors); regulator pin-outs against
+     the library symbols (78M12: 1 IN, 3 OUT, tab GND; 79M12: 1 GND, 2 IN,
+     3 OUT).
+   - D. AMS1117-3.3 and the 3.3 V output for the control board.
+   - E. Mute circuit driving `MUTE_SW`: choose comparator or supervisor and
+     the coil Zener at JLCPCB, explain the circuit to Antonios before
+     drawing.
+   - Where AGND and GND join (at the Daisy Seed) is drawn with the Daisy
+     sheet, item 3.
 3. **Daisy Seed socket and control-board connectors**: official Electrosmith
    footprint, firm pin table, general ribbon pinout.
 4. PWR_FLAGs / supply sources so that ERC is clean, then PCB.

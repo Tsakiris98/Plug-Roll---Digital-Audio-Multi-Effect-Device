@@ -1,4 +1,4 @@
-# Power Section — Design Note (v0.3, 2026-11-13)
+# Power Section — Design Note (v0.4, 2026-11-13)
 
 Status: **direction approved on 2026-11-13; nothing in the schematic yet.**
 Antonios's decisions: ready-made converter modules instead of converters
@@ -179,8 +179,8 @@ rails from the converters.
 
 | Rail | Part | JLCPCB | Tolerance to confirm |
 |---|---|---|---|
-| +12 V | 78M12, TO-252 (candidate) | C22458964, Extended, 16,071 | datasheet **to read**: output inside 11.4–12.6 V, dropout |
-| −12 V | MC79M12CDTRKG, onsemi, TO-252 | C67852, Extended, 2,538 | −11.4 … −12.6 V over line, load and temperature; dropout 1.1 V (onsemi MC79M00/D) |
+| +12 V | MC78M12CDTRKG, onsemi, TO-252 | C67851, Extended, 33,357 | onsemi MC78M00 datasheet **to read**: output inside 11.4–12.6 V, dropout (JLCPCB lists 2 V at 350 mA) |
+| −12 V | MC79M12BDTRKG, onsemi, TO-252 | C126400, Extended, 3,237 | −11.4 … −12.6 V over line, load and temperature; dropout 1.1 V (onsemi MC79M00/D) |
 | 3.3 V | AMS1117-3.3, SOT-223 | C6186, **Basic**, 1,455,161 | |
 
 - **Why fixed 12 V regulators and not adjustable ones (LM317/LM337).** No
@@ -197,13 +197,18 @@ rails from the converters.
   by JLCPCB; datasheet to read), which leaves only about 0.5 V of margin. If
   the datasheet confirms that, the +12 V regulator becomes a low-dropout
   type instead. Decided at schematic time, with the datasheet.
-- **The onsemi MC79M12CDTRKG is marked "discontinued"** in the revision
-  history of its datasheet (27 February 2026). JLCPCB still has 2,538. A
-  second source is chosen at schematic time (other makers' 79M12, or the
-  adjustable LM337S, C19267471, 1,321 in stock).
-- **Acceptance test** (already in the input note, section 11.1): the first
-  thing measured on the first board is that each rail is inside
-  11.4–12.6 V, before the Seed is fitted.
+- **Correction to v0.2/v0.3:** I wrote that the MC79M12CDTRKG is
+  discontinued. That was a misreading. The revision history of the onsemi
+  datasheet discontinues the older order codes without the final "G"
+  (MC79M12CDTRK and others); the ...DTRKG codes are in the current ordering
+  table. Second sources at JLCPCB anyway: MC79M12CDTRKG (C67852, 2,538) and
+  LM79M12CDT/TR (C49328976, 2,503).
+- **No low-dropout fixed 12 V regulator is stocked** (the LM2940 is there in
+  5 V, 3.3 V and 9 V only), so the +12 V regulator is a 78M12. Its input is
+  the well-regulated output of the module (14.5 V at worst), which leaves
+  about 0.5 V above the 2 V it needs at full current, and more at our
+  150 mA. Confirmed with the datasheet before drawing and measured on the
+  first board.
 
 ## 7. Mute at power-up and power-down
 
@@ -258,12 +263,32 @@ Mine, explained above, open to objection:
    allowance 300 mA, revisited when the LED driver is chosen (94 LEDs).
 6. Daisy Seed fed with 5 V on VIN.
 
-## 10. Parts still to select (at schematic time, each checked at JLCPCB)
+## 10. Parts (selected 2026-11-13, stock read from jlcpcb.com that day)
 
-DC jack (through-hole, panel part), PTC fuse, TVS diode, the extra series
-diode, inductors and capacitors of the two LC filters (inside the module's
-100 µF limit), bulk capacitors, the +12 V regulator and a second source for
-the −12 V one, the comparator of the mute circuit.
+| Function | Part | Package | LCSC | Library | Stock |
+|---|---|---|---|---|---|
+| ±15 V module | VRA1215YMD-6WR3, YLPTEC | through-hole 25.4 × 25.4 mm | C5369695 | Extended | 100 |
+| 5 V module | K7805-2000R3, YLPTEC | through-hole SIP-3 | C18212380 | Extended | 1,310 |
+| +12 V regulator | MC78M12CDTRKG, onsemi | TO-252 | C67851 | Extended | 33,357 |
+| −12 V regulator | MC79M12BDTRKG, onsemi | TO-252 | C126400 | Extended | 3,237 |
+| 3.3 V regulator | AMS1117-3.3 | SOT-223 | C6186 | **Basic** | 1,455,161 |
+| Bridge and series diode (5×) | SS34, 40 V 3 A Schottky | SMA | C8678 | **Basic** | 2,749,875 |
+| TVS diode | SMBJ18A: does not conduct up to 18 V, clamps at 29.2 V | SMB | C353379 | Extended | 52,117 |
+| Resettable fuse | SMD1812P200TF/24: 24 V, holds 2 A, trips at 4 A | 1812 | C434887 | Extended | 19,382 |
+| DC jack | DC-005C-20A: 2.0 mm pin (for 5.5 × 2.1 plugs), 24 V 3 A | through-hole | C84007 | Extended | 14,298 |
+| Bulk capacitor at the input | 470 µF 25 V, 90 mΩ, 5000 h (FZ470UF25V90RV0113) | SMD can 10 × 10.5 mm | C3445246 | Extended | 58,215 |
+| Filter capacitors ±15 V | 100 µF 25 V low-impedance (JVE25V100M6X8) | SMD can 6.3 × 7.7 mm | C48615121 | Extended | 77,289 |
+| Filter inductors | 2.2 µH, 3.4 A, 46 mΩ (SMNR4020-2.2UH) | SMD 4 × 4 mm | C135262 | Extended | 143,401 |
+| Ceramic capacitors at the modules | 22 µF 25 V X5R (CL31A226KAHNNNE) | 1206 | C12891 | **Basic** | 2,639,008 |
+
+- The TVS clamps at 29.2 V, below the 30 V the ±15 V module tolerates as a
+  surge and far below the 36 V of the 5 V module.
+- The fuse holds 2 A at room temperature, twice the worst-case draw, so it
+  never trips in normal use even when warm.
+- 100 µF before and 100 µF after each filter inductor is 200 µF per module
+  output, inside its 220 µF limit.
+- Still to select, with the mute circuit: its comparator or supervisor and
+  the Zener for the relay coils.
 
 ## 11. To be read before the schematic
 
