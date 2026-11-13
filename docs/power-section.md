@@ -1,6 +1,7 @@
 # Power Section — Design Note (v0.4, 2026-11-13)
 
-Status: **direction approved on 2026-11-13; nothing in the schematic yet.**
+Status: **approved on 2026-11-13. Schematic: power input and 5 V drawn
+(`power-input.kicad_sch`); ±15 V module, regulators and mute circuit still to draw.**
 Antonios's decisions: ready-made converter modules instead of converters
 built from parts, even from a lesser-known brand, and even if he has to buy
 and solder them himself; a supply that works comfortably, not at the limit;

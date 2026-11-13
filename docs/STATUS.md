@@ -9,9 +9,9 @@ Last update: **2026-11-13**.
 
 Everything up to and including the output section is drawn, verified,
 committed and pushed. Power section: design note `power-section.md` v0.4,
-**all parts selected and in the JLCPCB library** (section 10 of the note),
-**no schematic yet**. Nothing is half-done. The next action is "Next steps"
-item 2, step B.
+all parts selected and in the JLCPCB library, **step B drawn** (power input
+and 5 V, sheet `power-input.kicad_sch`, page 9). Nothing is half-done. The
+next action is "Next steps" item 2, step C.
 
 Antonios works inside a 5-hour usage limit: work in small steps, commit after
 each one, and stop with this file updated before the limit is close.
@@ -34,15 +34,17 @@ Phase 1, main board, schematic in progress. Requirements are at **v0.7**.
 | DAC gain, bypass relay | `output-section.md` v0.1, approved | drawn | `output-dac.kicad_sch` (6) |
 | Volume pot header, line buffers, headphone amplifier | same | drawn | `output-pots.kicad_sch` (7) |
 | Mute relays, output and headphone jacks | same | drawn | `output-jacks.kicad_sch` (8) |
-| Power supply, power-on mute delay circuit | `power-section.md` v0.4, direction approved | **not drawn** | |
+| Power input, 5 V module | `power-section.md` v0.4 | drawn | `power-input.kicad_sch` (9) |
+| ±15 V module, ±12 V and 3.3 V regulators, mute delay circuit | same | **not drawn** | |
 | Daisy Seed socket, ribbon connector to the control board | **no note yet** | not drawn | |
 
 State of the checks: `python3 tools/schgen/verify.py` reports "netlist matches
-the intended circuit". ERC gives 6 findings, all expected: 1 label with one
-end (`BYPASS_RELAY`, waits for the Daisy sheet) and 5 supply rails without a
-source (+12 V, −12 V, +5 V, GNDA, GND). Signals still open towards blocks
-that are not drawn: `INST_SW` (toggle, general ribbon), `MUTE_SW` (power
-section), `ADC_IN_L/R`, `DAC_OUT_L/R`, `BYPASS_RELAY` (Daisy socket).
+the intended circuit". ERC gives 4 findings, all expected: 1 label with one
+end (`BYPASS_RELAY`, waits for the Daisy sheet) and 3 supply rails without a
+source (+12 V, −12 V, GNDA; they get one in step C). Signals still open
+towards blocks that are not drawn: `INST_SW` (toggle, general ribbon),
+`MUTE_SW` and `VIN_SENSE` (mute circuit), `VIN_DC` (±15 V module),
+`ADC_IN_L/R`, `DAC_OUT_L/R`, `BYPASS_RELAY` (Daisy socket).
 
 ## How the schematic is made
 
@@ -80,9 +82,10 @@ section), `ADC_IN_L/R`, `DAC_OUT_L/R`, `BYPASS_RELAY` (Daisy socket).
    verify, ERC, PDF and commit:
    - A. *(done 2026-11-13)* parts selected, added to the library; module
      pin-outs checked against the YLPTEC datasheets in `docs/datasheet/`.
-   - B. Input and 5 V: DC jack, PTC, TVS, bridge (4× SS34), "adapter present"
-     node, series SS34, 470 µF bulk, K7805-2000R3 with 22 µF ceramics, +5 V
-     and GND with PWR_FLAGs. Read first: nothing more needed.
+   - B. *(done 2026-11-13)* Input and 5 V: DC jack J9, PTC F1, bridge
+     D9–D12, TVS D14, `VIN_SENSE` node, series diode D13, 470 µF bulk C53,
+     K7805-2000R3 (PS1) with 22 µF ceramics, +5 V and GND with PWR_FLAGs.
+     `VIN_DC` goes to the ±15 V module.
    - C. ±15 V module with its capacitors, 2.2 µH + 100 µF filters, MC78M12 and
      MC79M12, ±12 V and GNDA with PWR_FLAGs. Read first: onsemi MC78M00
      datasheet (tolerance, dropout, capacitors); regulator pin-outs against
@@ -100,6 +103,10 @@ section), `ADC_IN_L/R`, `DAC_OUT_L/R`, `BYPASS_RELAY` (Daisy socket).
 
 ## Open checks carried forward
 
+- DC jack DC-005C-20A (C84007): pins assigned from the footprint geometry and
+  the symbol drawing (1 = centre pin at the rear, 2 = sleeve, 3 = side switch
+  contact, left unconnected). The datasheet could not be downloaded; confirm
+  on it before the PCB. A wrong assignment gives no power, not damage.
 - Pad numbering of the 2×8 header footprint against the IDC pin order (odd/even rows) before the PCB.
 - NMJ6HCD2 footprint orientation against the Neutrik drawing (which row faces
   the panel) before the PCB.
